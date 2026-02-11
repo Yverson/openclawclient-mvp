@@ -4,42 +4,28 @@ import { Button } from "@/components/Button"
 import { Input } from "@/components/Input"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/Card"
 import { Spinner } from "@/components/Spinner"
-import { useAuth } from "@/hooks/useAuth"
 import { useAuthStore } from "@/store/authStore"
 
 export const LoginScreen: React.FC = () => {
   const [apiUrl, setApiUrl] = useState("http://37.60.228.219:18790")
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
-  const [isChecking, setIsChecking] = useState(true)
-  const [localError, setLocalError] = useState<string | null>(null)
-  const [localLoading, setLocalLoading] = useState(false)
+  const [isLoading, setIsLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  
   const { setToken, setApiUrl: storeSetApiUrl, setUser } = useAuthStore()
-
-  // Auto-login if token exists in localStorage
-  useEffect(() => {
-    const savedToken = localStorage.getItem("auth_token")
-    const savedApiUrl = localStorage.getItem("api_url")
-    
-    if (savedToken && savedApiUrl) {
-      console.log("✅ Already authenticated, skipping login screen")
-      setIsChecking(false)
-    } else {
-      setIsChecking(false)
-    }
-  }, [])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!apiUrl || !email || !password) {
+      setError("All fields required")
       return
     }
     
-    setLocalLoading(true)
-    setLocalError(null)
+    setIsLoading(true)
+    setError(null)
     
     try {
-      // Call backend auth/login endpoint
       const response = await fetch(`${apiUrl}/auth/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -66,24 +52,12 @@ export const LoginScreen: React.FC = () => {
         role: "user"
       })
       
-      setLocalLoading(false)
+      setIsLoading(false)
     } catch (err: any) {
       console.error("Login failed:", err)
-      setLocalError(err.message || 'Login failed')
-      setLocalLoading(false)
+      setError(err.message || 'Login failed')
+      setIsLoading(false)
     }
-  }
-
-  // If already authenticated, don't show login form
-  if (isChecking) {
-    return (
-      <div className="flex h-screen w-screen items-center justify-center bg-slate-900">
-        <div className="text-center">
-          <Spinner size="lg" />
-          <p className="text-slate-300 mt-4">Vérification de la session...</p>
-        </div>
-      </div>
-    )
   }
 
   return (
@@ -102,10 +76,10 @@ export const LoginScreen: React.FC = () => {
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
-            {localError && (
+            {error && (
               <div className="p-3 rounded-lg bg-red-900/30 border border-red-700 flex gap-2">
                 <AlertCircle className="w-5 h-5 text-red-400 flex-shrink-0 mt-0.5" />
-                <p className="text-sm text-red-200">{localError}</p>
+                <p className="text-sm text-red-200">{error}</p>
               </div>
             )}
 
@@ -116,7 +90,7 @@ export const LoginScreen: React.FC = () => {
               <Input
                 id="apiUrl"
                 type="url"
-                placeholder="http://localhost:18789"
+                placeholder="http://37.60.228.219:18790"
                 value={apiUrl}
                 onChange={(e) => setApiUrl(e.target.value)}
                 disabled={isLoading}
@@ -134,7 +108,7 @@ export const LoginScreen: React.FC = () => {
                 placeholder="your@email.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                disabled={localLoading}
+                disabled={isLoading}
                 required
               />
             </div>
@@ -149,7 +123,7 @@ export const LoginScreen: React.FC = () => {
                 placeholder="Your password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                disabled={localLoading}
+                disabled={isLoading}
                 required
               />
             </div>
@@ -157,9 +131,9 @@ export const LoginScreen: React.FC = () => {
             <Button
               type="submit"
               className="w-full"
-              disabled={localLoading || !apiUrl || !email || !password}
+              disabled={isLoading || !apiUrl || !email || !password}
             >
-              {localLoading ? (
+              {isLoading ? (
                 <div className="flex items-center gap-2">
                   <Spinner size="sm" />
                   <span>Signing in...</span>
@@ -172,10 +146,11 @@ export const LoginScreen: React.FC = () => {
 
           <div className="mt-6 pt-6 border-t border-slate-700">
             <p className="text-xs text-slate-500 text-center">
-              Don't have an account?{" "}
-              <a href="#" className="text-primary-400 hover:text-primary-300">
-                Contact your administrator
-              </a>
+              Demo credentials:
+            </p>
+            <p className="text-xs text-slate-400 text-center mt-2">
+              Email: demo@example.com<br />
+              Password: demo123
             </p>
           </div>
         </CardContent>
