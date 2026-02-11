@@ -8,9 +8,10 @@ import { useAuth } from "@/hooks/useAuth"
 
 export const LoginScreen: React.FC = () => {
   const [apiUrl, setApiUrl] = useState("http://37.60.228.219:18790")
-  const [token, setToken] = useState("")
+  const [email, setEmail] = useState("")
+  const [password, setPassword] = useState("")
   const [isChecking, setIsChecking] = useState(true)
-  const { login, isLoading, error, token: savedToken, apiUrl: savedApiUrl } = useAuth()
+  const { login, isLoading, error } = useAuth()
 
   // Auto-login if token exists in localStorage
   useEffect(() => {
@@ -18,10 +19,8 @@ export const LoginScreen: React.FC = () => {
     const savedApiUrl = localStorage.getItem("api_url")
     
     if (savedToken && savedApiUrl) {
-      // Already logged in, skip to dashboard
       console.log("✅ Already authenticated, skipping login screen")
       setIsChecking(false)
-      // The parent component should handle routing based on useAuth state
     } else {
       setIsChecking(false)
     }
@@ -29,12 +28,28 @@ export const LoginScreen: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!apiUrl || !token) {
+    if (!apiUrl || !email || !password) {
       return
     }
+    
     try {
-      await login(apiUrl, token)
-    } catch (err) {
+      // Call backend auth/login endpoint
+      const response = await fetch(`${apiUrl}/auth/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password })
+      })
+
+      if (!response.ok) {
+        const data = await response.json()
+        throw new Error(data.error || 'Login failed')
+      }
+
+      const data = await response.json()
+      
+      // Login with the returned token
+      await login(apiUrl, data.token)
+    } catch (err: any) {
       console.error("Login failed:", err)
     }
   }
@@ -90,15 +105,30 @@ export const LoginScreen: React.FC = () => {
             </div>
 
             <div className="space-y-2">
-              <label htmlFor="token" className="text-sm font-medium text-slate-300">
-                API Token
+              <label htmlFor="email" className="text-sm font-medium text-slate-300">
+                Email
               </label>
               <Input
-                id="token"
+                id="email"
+                type="email"
+                placeholder="your@email.com"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                disabled={isLoading}
+                required
+              />
+            </div>
+
+            <div className="space-y-2">
+              <label htmlFor="password" className="text-sm font-medium text-slate-300">
+                Password
+              </label>
+              <Input
+                id="password"
                 type="password"
-                placeholder="Paste your token here..."
-                value={token}
-                onChange={(e) => setToken(e.target.value)}
+                placeholder="Your password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
                 disabled={isLoading}
                 required
               />
@@ -107,7 +137,7 @@ export const LoginScreen: React.FC = () => {
             <Button
               type="submit"
               className="w-full"
-              disabled={isLoading || !apiUrl || !token}
+              disabled={isLoading || !apiUrl || !email || !password}
             >
               {isLoading ? (
                 <div className="flex items-center gap-2">
