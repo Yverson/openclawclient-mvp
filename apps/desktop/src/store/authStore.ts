@@ -70,6 +70,7 @@ export const useAuthStore = create<AuthStore>((set) => ({
   logout: () => {
     localStorage.removeItem("auth_token")
     localStorage.removeItem("api_url")
+    localStorage.removeItem("auth_user")
     set({
       user: null,
       token: null,
@@ -79,29 +80,23 @@ export const useAuthStore = create<AuthStore>((set) => ({
     })
   },
 
-  hydrate: async () => {
+  hydrate: () => {
     const token = localStorage.getItem("auth_token")
     const apiUrl = localStorage.getItem("api_url")
+    const userStr = localStorage.getItem("auth_user")
 
-    if (token && apiUrl) {
-      set({ token, apiUrl })
-      apiClient.setBaseUrl(apiUrl)
-      
-      // Verify token is still valid by fetching user info
+    if (token && apiUrl && userStr) {
       try {
-        const response = await apiClient.get("/auth/me")
-        const user: User = {
-          id: response.data.userId,
-          email: response.data.email,
-          role: "user"
-        }
-        set({ user })
+        const user = JSON.parse(userStr)
+        console.log("✅ Hydrating from localStorage:", user.email)
+        set({ token, apiUrl, user })
+        apiClient.setBaseUrl(apiUrl)
       } catch (error) {
-        // Token expired or invalid, clear it
-        console.error("Token validation failed:", error)
+        console.error("Failed to parse user from localStorage:", error)
+        // Clear invalid data
         localStorage.removeItem("auth_token")
         localStorage.removeItem("api_url")
-        set({ token: null, apiUrl: null, user: null })
+        localStorage.removeItem("auth_user")
       }
     }
   },

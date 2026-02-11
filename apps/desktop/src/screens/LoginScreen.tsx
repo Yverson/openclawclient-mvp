@@ -44,6 +44,11 @@ export const LoginScreen: React.FC = () => {
       // Save to localStorage FIRST
       localStorage.setItem("auth_token", data.token)
       localStorage.setItem("api_url", apiUrl)
+      localStorage.setItem("auth_user", JSON.stringify({
+        id: data.user.id,
+        email: data.user.email,
+        role: "user"
+      }))
       console.log("✅ localStorage saved")
       console.log("Token in storage:", localStorage.getItem("auth_token")?.substring(0, 20) + "...")
       
