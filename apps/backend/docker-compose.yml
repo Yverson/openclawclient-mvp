@@ -1,0 +1,30 @@
+version: '3.8'
+
+services:
+  backend:
+    build: .
+    container_name: openclawclient-backend
+    ports:
+      - "18789:18789"
+    environment:
+      PORT: 18789
+      API_URL: http://37.60.228.219:18789
+      JWT_SECRET: ${JWT_SECRET:-dev-secret-key-change-in-production}
+      NODE_ENV: production
+      CORS_ORIGINS: http://213.136.87.202:3001,http://213.136.87.202:3002,http://localhost:3000
+      DB_PATH: ./data/openclaw.db
+    volumes:
+      - ./data:/app/data
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:18789/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    networks:
+      - default
+    restart: unless-stopped
+
+networks:
+  default:
+    driver: bridge
