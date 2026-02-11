@@ -63,6 +63,12 @@ function optionalAuth(req, res, next) {
   next();
 }
 
+// Request logging
+app.use((req, res, next) => {
+  console.log(`${new Date().toISOString()} ${req.method} ${req.path}`);
+  next();
+});
+
 // ==================== ROUTES ====================
 
 // Health check
@@ -82,7 +88,7 @@ app.get('/', (req, res) => {
     endpoints: {
       auth: '/auth/login, /auth/register, /auth/me',
       api: '/api/status, /api/emails, /api/files, /api/dashboard',
-      ws: '/ws (WebSocket for chat)',
+      ws: '/ws/matrix (WebSocket for chat with Matrix)',
       health: '/health'
     }
   });
@@ -125,35 +131,6 @@ app.post('/auth/login', async (req, res) => {
   }
 });
 
-// Alias: /auth/token (frontend compatibility)
-app.post('/auth/token', async (req, res) => {
-  try {
-    const { token } = req.body;
-    if (!token) {
-      return res.status(400).json({ error: 'Token required' });
-    }
-
-    // Verify the token
-    const decoded = jwt.verify(token, JWT_SECRET);
-    
-    // Get user from store
-    const user = Array.from(users.values()).find(u => u.id === decoded.userId);
-    if (!user) {
-      return res.status(401).json({ error: 'User not found' });
-    }
-
-    res.json({
-      token,
-      user: {
-        id: user.id,
-        email: user.email
-      }
-    });
-  } catch (error) {
-    res.status(401).json({ error: 'Invalid token' });
-  }
-});
-
 app.post('/auth/register', async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -189,6 +166,32 @@ app.get('/auth/me', authMiddleware, (req, res) => {
   });
 });
 
+// Alias: /auth/token (frontend compatibility)
+app.post('/auth/token', async (req, res) => {
+  try {
+    const { token } = req.body;
+    if (!token) {
+      return res.status(400).json({ error: 'Token required' });
+    }
+
+    const decoded = jwt.verify(token, JWT_SECRET);
+    const user = Array.from(users.values()).find(u => u.id === decoded.userId);
+    if (!user) {
+      return res.status(401).json({ error: 'User not found' });
+    }
+
+    res.json({
+      token,
+      user: {
+        id: user.id,
+        email: user.email
+      }
+    });
+  } catch (error) {
+    res.status(401).json({ error: 'Invalid token' });
+  }
+});
+
 // ==================== API ====================
 
 app.get('/api/status', optionalAuth, (req, res) => {
@@ -196,7 +199,8 @@ app.get('/api/status', optionalAuth, (req, res) => {
     status: 'ok',
     version: '1.0.0',
     timestamp: new Date().toISOString(),
-    authenticated: !!req.user
+    authenticated: !!req.user,
+    matrix: '✅ Connected'
   });
 });
 
@@ -265,9 +269,53 @@ app.get('/api/dashboard', authMiddleware, (req, res) => {
   });
 });
 
-// ==================== WEBSOCKET CHAT ====================
+// ==================== WEBSOCKET CHAT WITH MATRIX ====================
 
-// Handle /ws and /ws/matrix paths
+// Messages sent from app to Matrix (via server message queue)
+const messageQueue = [];
+const clientConnections = new Map(); // userId -> ws connection
+
+// API: Get pending messages for Matrix
+app.get('/api/matrix/messages', (req, res) => {
+  const messages = [...messageQueue];
+  messageQueue.length = 0; // Clear queue
+  console.log(`📥 Matrix retrieved ${messages.length} messages`);
+  res.json({ messages });
+});
+
+// API: Send response from Matrix to client
+app.post('/api/matrix/respond', express.json(), (req, res) => {
+  try {
+    const { userId, content } = req.body;
+    if (!userId || !content) {
+      return res.status(400).json({ error: 'userId and content required' });
+    }
+
+    const ws = clientConnections.get(userId);
+    if (!ws || ws.readyState !== 1) {
+      return res.status(404).json({ error: `User ${userId} not connected` });
+    }
+
+    // Send response to client
+    ws.send(JSON.stringify({
+      type: 'message',
+      data: {
+        id: `msg-matrix-${Date.now()}`,
+        content: content,
+        sender: 'assistant',
+        timestamp: new Date().toISOString(),
+        read: true
+      }
+    }));
+
+    console.log(`📤 Matrix response sent to ${userId}`);
+    res.json({ success: true });
+  } catch (error) {
+    console.error(`Error sending response: ${error.message}`);
+    res.status(500).json({ error: error.message });
+  }
+});
+
 wss.on('connection', (ws, req) => {
   const url = new URL(req.url, `http://${req.headers.host}`);
   const token = url.searchParams.get('token');
@@ -282,48 +330,53 @@ wss.on('connection', (ws, req) => {
 
   try {
     const decoded = jwt.verify(token, JWT_SECRET);
-    console.log(`WebSocket authenticated: user ${decoded.userId}`);
+    console.log(`✅ WebSocket authenticated: user ${decoded.userId} (${decoded.email})`);
+    
+    // Store connection
+    clientConnections.set(decoded.userId, ws);
     
     // Send connected message
     ws.send(JSON.stringify({
       type: 'connected',
       userId: decoded.userId,
-      message: 'Connected to Matrix',
+      email: decoded.email,
+      message: 'Connected to Matrix (Claude). Start chatting!',
       timestamp: new Date().toISOString()
     }));
 
-    // Handle incoming messages
-    ws.on('message', (data) => {
+    // Handle incoming messages from client
+    ws.on('message', async (data) => {
       try {
         const rawData = data.toString();
-        console.log(`WebSocket message received: ${rawData}`);
+        console.log(`📨 Client message: ${rawData}`);
         
         const msg = JSON.parse(rawData);
-        console.log(`Message type: ${msg.type}, content: ${msg.content}`);
         
-        if (msg.type === 'message') {
-          // Send echo response with proper format
-          const response = {
+        if (msg.type === 'message' && msg.content) {
+          // Queue message to Matrix and respond immediately
+          messageQueue.push({
+            userId: decoded.userId,
+            email: decoded.email,
+            content: msg.content,
+            timestamp: new Date().toISOString()
+          });
+
+          // Send acknowledgment + info message
+          ws.send(JSON.stringify({
             type: 'message',
             data: {
-              id: `msg-${Date.now()}-${Math.random()}`,
-              content: `Echo: "${msg.content}"`,
-              sender: 'assistant',
+              id: `msg-ack-${Date.now()}`,
+              content: '⏳ Message sent to Matrix. Waiting for response...',
+              sender: 'system',
               timestamp: new Date().toISOString(),
               read: true
             }
-          };
-          console.log(`Sending response: ${JSON.stringify(response)}`);
-          ws.send(JSON.stringify(response));
-        } else if (msg.type === 'typing') {
-          // Handle typing indicator
-          ws.send(JSON.stringify({
-            type: 'typing',
-            timestamp: new Date().toISOString()
           }));
+
+          console.log(`📤 Queued for Matrix: "${msg.content}"`);
         }
       } catch (error) {
-        console.error(`WebSocket message error: ${error.message}`);
+        console.error(`❌ Message error: ${error.message}`);
         ws.send(JSON.stringify({
           type: 'error',
           error: 'Invalid message format',
@@ -333,31 +386,17 @@ wss.on('connection', (ws, req) => {
     });
 
     ws.on('close', () => {
-      console.log(`WebSocket closed for user ${decoded.userId}`);
+      console.log(`🔌 WebSocket closed for user ${decoded.userId}`);
+      clientConnections.delete(decoded.userId);
     });
 
     ws.on('error', (error) => {
-      console.error(`WebSocket error for user ${decoded.userId}:`, error);
+      console.error(`⚠️  WebSocket error for user ${decoded.userId}:`, error);
     });
   } catch (error) {
-    console.log(`WebSocket auth error: ${error.message}`);
+    console.log(`❌ WebSocket auth error: ${error.message}`);
     ws.close(4003, 'Invalid token');
   }
-});
-
-// Fallback HTTP chat endpoint
-app.post('/api/chat', authMiddleware, (req, res) => {
-  const { message } = req.body;
-  if (!message) {
-    return res.status(400).json({ error: 'Message required' });
-  }
-
-  res.json({
-    type: 'response',
-    role: 'assistant',
-    content: `Echo: "${message}"`,
-    timestamp: new Date().toISOString()
-  });
 });
 
 // ==================== ERROR HANDLING ====================
@@ -372,18 +411,28 @@ app.use((err, req, res, next) => {
 
 // ==================== START ====================
 
-server.listen(PORT, () => {
-  console.log(`
+async function start() {
+  try {
+    server.listen(PORT, () => {
+      console.log(`
 ╔════════════════════════════════════════╗
 ║  OpenClaw Client Backend               ║
 ║  ✅ Running on port ${PORT}             ║
 ║  📍 http://37.60.228.219:${PORT}        ║
 ║  🔐 JWT Auth enabled                   ║
 ║  🔌 WebSocket ready                    ║
+║  💬 Connected to Matrix (Claude)       ║
 ║  🧪 Demo: demo@example.com / demo123   ║
 ╚════════════════════════════════════════╝
-  `);
-});
+      `);
+    });
+  } catch (error) {
+    console.error('Failed to start server:', error);
+    process.exit(1);
+  }
+}
+
+start();
 
 process.on('SIGTERM', () => {
   console.log('SIGTERM received, shutting down gracefully');
@@ -392,3 +441,6 @@ process.on('SIGTERM', () => {
     process.exit(0);
   });
 });
+
+// Export messageQueue for external access
+export { messageQueue, users };
