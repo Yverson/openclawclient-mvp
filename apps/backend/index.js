@@ -3,6 +3,7 @@ import cors from 'cors';
 import jwt from 'jsonwebtoken';
 import bcryptjs from 'bcryptjs';
 import http from 'http';
+import { WebSocketServer } from 'ws';
 import dotenv from 'dotenv';
 
 dotenv.config();
@@ -13,9 +14,7 @@ const JWT_SECRET = process.env.JWT_SECRET || 'dev-secret-key-change-in-productio
 
 const app = express();
 const server = http.createServer(app);
-
-// ==================== WEBSOCKET (using ws library) ====================
-// WebSocket handling would go here, for now using simple HTTP fallback
+const wss = new WebSocketServer({ server });
 
 // Middleware
 app.use(cors({
@@ -266,8 +265,87 @@ app.get('/api/dashboard', authMiddleware, (req, res) => {
   });
 });
 
-// ==================== CHAT (HTTP polling fallback) ====================
+// ==================== WEBSOCKET CHAT ====================
 
+// Handle /ws and /ws/matrix paths
+wss.on('connection', (ws, req) => {
+  const url = new URL(req.url, `http://${req.headers.host}`);
+  const token = url.searchParams.get('token');
+  
+  console.log(`WebSocket connection: ${req.url}`);
+  
+  if (!token) {
+    console.log('WebSocket: Missing token');
+    ws.close(4001, 'Missing token');
+    return;
+  }
+
+  try {
+    const decoded = jwt.verify(token, JWT_SECRET);
+    console.log(`WebSocket authenticated: user ${decoded.userId}`);
+    
+    // Send connected message
+    ws.send(JSON.stringify({
+      type: 'connected',
+      userId: decoded.userId,
+      message: 'Connected to Matrix',
+      timestamp: new Date().toISOString()
+    }));
+
+    // Handle incoming messages
+    ws.on('message', (data) => {
+      try {
+        const rawData = data.toString();
+        console.log(`WebSocket message received: ${rawData}`);
+        
+        const msg = JSON.parse(rawData);
+        console.log(`Message type: ${msg.type}, content: ${msg.content}`);
+        
+        if (msg.type === 'message') {
+          // Send echo response with proper format
+          const response = {
+            type: 'message',
+            data: {
+              id: `msg-${Date.now()}-${Math.random()}`,
+              content: `Echo: "${msg.content}"`,
+              sender: 'assistant',
+              timestamp: new Date().toISOString(),
+              read: true
+            }
+          };
+          console.log(`Sending response: ${JSON.stringify(response)}`);
+          ws.send(JSON.stringify(response));
+        } else if (msg.type === 'typing') {
+          // Handle typing indicator
+          ws.send(JSON.stringify({
+            type: 'typing',
+            timestamp: new Date().toISOString()
+          }));
+        }
+      } catch (error) {
+        console.error(`WebSocket message error: ${error.message}`);
+        ws.send(JSON.stringify({
+          type: 'error',
+          error: 'Invalid message format',
+          timestamp: new Date().toISOString()
+        }));
+      }
+    });
+
+    ws.on('close', () => {
+      console.log(`WebSocket closed for user ${decoded.userId}`);
+    });
+
+    ws.on('error', (error) => {
+      console.error(`WebSocket error for user ${decoded.userId}:`, error);
+    });
+  } catch (error) {
+    console.log(`WebSocket auth error: ${error.message}`);
+    ws.close(4003, 'Invalid token');
+  }
+});
+
+// Fallback HTTP chat endpoint
 app.post('/api/chat', authMiddleware, (req, res) => {
   const { message } = req.body;
   if (!message) {
@@ -277,7 +355,7 @@ app.post('/api/chat', authMiddleware, (req, res) => {
   res.json({
     type: 'response',
     role: 'assistant',
-    content: `Echo: "${message}" (WebSocket not yet implemented, using HTTP fallback)`,
+    content: `Echo: "${message}"`,
     timestamp: new Date().toISOString()
   });
 });

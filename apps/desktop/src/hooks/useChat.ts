@@ -52,6 +52,18 @@ export const useChat = () => {
       setError("Chat is not connected")
       return
     }
+    
+    // Add user message to chat
+    const userMessage = {
+      id: `msg-${Date.now()}`,
+      content,
+      sender: "user" as const,
+      timestamp: new Date().toISOString(),
+      read: true,
+    }
+    addMessage(userMessage)
+    
+    // Send to backend
     matrixWebSocket.sendMessage(content)
   }
 
