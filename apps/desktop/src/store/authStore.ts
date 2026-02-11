@@ -37,19 +37,31 @@ export const useAuthStore = create<AuthStore>((set) => ({
     set({ isLoading: true, error: null })
     try {
       apiClient.setBaseUrl(apiUrl)
-      const response = await apiClient.login(apiUrl, token)
+      
+      // If token is a JWT-like string, just use it directly
+      if (token.includes('.')) {
+        // It's a token, verify it with /auth/token endpoint
+        const response = await apiClient.login(apiUrl, token)
+        
+        localStorage.setItem("auth_token", response.token)
+        localStorage.setItem("api_url", apiUrl)
 
-      localStorage.setItem("auth_token", response.token)
-      localStorage.setItem("api_url", apiUrl)
-
-      set({
-        user: response.user,
-        token: response.token,
-        apiUrl,
-        isLoading: false,
-      })
+        set({
+          user: {
+            id: response.user.id,
+            email: response.user.email,
+            role: "user"
+          },
+          token: response.token,
+          apiUrl,
+          isLoading: false,
+        })
+      } else {
+        // Shouldn't happen with new email/password flow
+        throw new Error("Invalid token format")
+      }
     } catch (error: any) {
-      const errorMessage = error.response?.data?.error || "Login failed"
+      const errorMessage = error.response?.data?.error || error.message || "Login failed"
       set({ error: errorMessage, isLoading: false })
       throw error
     }
