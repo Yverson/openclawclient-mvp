@@ -3,41 +3,34 @@ FROM node:20-bookworm AS builder
 
 WORKDIR /app
 
-# Copy package files (root + desktop)
+# Copy workspace files
 COPY package.json package-lock.json ./
-COPY apps/desktop/package.json apps/desktop/package-lock.json ./apps/desktop/
-
-# Install dependencies (root workspace)
-RUN npm ci --legacy-peer-deps || npm install --legacy-peer-deps
-
-# Copy project files
-COPY . .
+COPY apps/desktop ./apps/desktop
 
 # Install desktop dependencies
-RUN cd apps/desktop && npm ci --legacy-peer-deps || npm install --legacy-peer-deps
+WORKDIR /app/apps/desktop
+RUN npm install --legacy-peer-deps
 
-# Build applications
-RUN cd apps/desktop && npm run build:web
+# Build React web app
+RUN npm run build:web
 
-# Stage 2: Runtime
+# Stage 2: Runtime - Serve with Node
 FROM node:20-alpine
 
 WORKDIR /app
 
-# Install runtime dependencies only
-COPY package.json package-lock.json ./
-RUN npm ci --omit=dev
+# Install serve (lightweight HTTP server)
+RUN npm install -g serve
 
 # Copy built artifacts from builder
-COPY --from=builder /app/dist ./dist
-COPY --from=builder /app/apps/desktop/dist ./apps/desktop/dist
+COPY --from=builder /app/apps/desktop/dist ./dist
 
 # Expose port
 EXPOSE 3000
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
-  CMD node -e "require('http').get('http://localhost:3000/api/health', (r) => {if (r.statusCode !== 200) throw new Error(r.statusCode)})"
+  CMD wget --quiet --tries=1 --spider http://localhost:3000/ || exit 1
 
-# Start application
-CMD ["npm", "run", "start:web"]
+# Start serving the built app
+CMD ["serve", "-s", "dist", "-l", "3000"]
