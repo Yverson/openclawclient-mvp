@@ -5,12 +5,79 @@ import bcryptjs from 'bcryptjs';
 import http from 'http';
 import { WebSocketServer } from 'ws';
 import dotenv from 'dotenv';
+import fs from 'fs';
+import path from 'path';
 
 dotenv.config();
 
 const PORT = process.env.PORT || 18790;
 const CORS_ORIGINS = (process.env.CORS_ORIGINS || 'http://localhost:3000').split(',');
 const JWT_SECRET = process.env.JWT_SECRET || 'dev-secret-key-change-in-production';
+
+// Data file paths
+const DATA_DIR = path.join(process.cwd(), 'data');
+const USERS_FILE = path.join(DATA_DIR, 'users.json');
+const CONVERSATIONS_FILE = path.join(DATA_DIR, 'conversations.json');
+
+// Ensure data directory exists
+if (!fs.existsSync(DATA_DIR)) {
+  fs.mkdirSync(DATA_DIR, { recursive: true });
+}
+
+// Load/Save functions
+function loadUsers() {
+  try {
+    if (fs.existsSync(USERS_FILE)) {
+      return JSON.parse(fs.readFileSync(USERS_FILE, 'utf8'));
+    }
+  } catch (error) {
+    console.error(`Error loading users: ${error.message}`);
+  }
+  return [];
+}
+
+function saveUsers(users) {
+  try {
+    fs.writeFileSync(USERS_FILE, JSON.stringify(users, null, 2));
+  } catch (error) {
+    console.error(`Error saving users: ${error.message}`);
+  }
+}
+
+function loadConversations() {
+  try {
+    if (fs.existsSync(CONVERSATIONS_FILE)) {
+      return JSON.parse(fs.readFileSync(CONVERSATIONS_FILE, 'utf8'));
+    }
+  } catch (error) {
+    console.error(`Error loading conversations: ${error.message}`);
+  }
+  return {};
+}
+
+function saveConversations(conversations) {
+  try {
+    fs.writeFileSync(CONVERSATIONS_FILE, JSON.stringify(conversations, null, 2));
+  } catch (error) {
+    console.error(`Error saving conversations: ${error.message}`);
+  }
+}
+
+function addMessage(userId, role, content) {
+  const conversations = loadConversations();
+  if (!conversations[userId]) {
+    conversations[userId] = [];
+  }
+  
+  conversations[userId].push({
+    id: `msg-${Date.now()}-${Math.random()}`,
+    role,
+    content,
+    timestamp: new Date().toISOString()
+  });
+  
+  saveConversations(conversations);
+}
 
 const app = express();
 const server = http.createServer(app);
@@ -269,21 +336,60 @@ app.get('/api/dashboard', authMiddleware, (req, res) => {
   });
 });
 
+// API: Get chat history on load
+app.get('/api/chat/history', authMiddleware, (req, res) => {
+  const conversations = loadConversations();
+  const userHistory = conversations[req.user.userId] || [];
+  
+  // Convert to frontend format
+  const messages = userHistory.map(msg => ({
+    id: msg.id,
+    content: msg.content,
+    sender: msg.role === 'user' ? 'user' : 'assistant',
+    timestamp: msg.timestamp,
+    read: true
+  }));
+  
+  res.json({ messages });
+});
+
 // ==================== WEBSOCKET CHAT WITH MATRIX ====================
 
 // Messages sent from app to Matrix (via server message queue)
 const messageQueue = [];
 const clientConnections = new Map(); // userId -> ws connection
 
-// API: Get pending messages for Matrix
+// API: Get pending messages for Matrix (with context)
 app.get('/api/matrix/messages', (req, res) => {
-  const messages = [...messageQueue];
+  const messages = [];
+  
+  // Get messages with full context
+  for (const msg of messageQueue) {
+    const conversations = loadConversations();
+    const userHistory = conversations[msg.userId] || [];
+    const users = loadUsers();
+    const user = users.find(u => u.id === msg.userId);
+    
+    messages.push({
+      ...msg,
+      user: user ? { id: user.id, email: user.email, name: user.name } : null,
+      conversationHistory: userHistory.slice(-10) // Last 10 messages for context
+    });
+  }
+  
   messageQueue.length = 0; // Clear queue
-  console.log(`📥 Matrix retrieved ${messages.length} messages`);
+  console.log(`📥 Matrix retrieved ${messages.length} messages with context`);
   res.json({ messages });
 });
 
-// API: Send response from Matrix to client
+// API: Get conversation history
+app.get('/api/conversations/:userId', authMiddleware, (req, res) => {
+  const conversations = loadConversations();
+  const userConversations = conversations[req.params.userId] || [];
+  res.json({ messages: userConversations });
+});
+
+// API: Send response from Matrix to client (and save to history)
 app.post('/api/matrix/respond', express.json(), (req, res) => {
   try {
     const { userId, content } = req.body;
@@ -291,9 +397,16 @@ app.post('/api/matrix/respond', express.json(), (req, res) => {
       return res.status(400).json({ error: 'userId and content required' });
     }
 
+    // Save assistant response to history
+    addMessage(userId, 'assistant', content);
+
     const ws = clientConnections.get(userId);
     if (!ws || ws.readyState !== 1) {
-      return res.status(404).json({ error: `User ${userId} not connected` });
+      console.log(`⚠️ User ${userId} not connected, message queued for delivery`);
+      return res.status(202).json({ 
+        success: true, 
+        message: 'Response saved, will be delivered on reconnection' 
+      });
     }
 
     // Send response to client
@@ -353,7 +466,10 @@ wss.on('connection', (ws, req) => {
         const msg = JSON.parse(rawData);
         
         if (msg.type === 'message' && msg.content) {
-          // Queue message to Matrix and respond immediately
+          // Save user message to history
+          addMessage(decoded.userId, 'user', msg.content);
+          
+          // Queue message to Matrix
           messageQueue.push({
             userId: decoded.userId,
             email: decoded.email,
@@ -366,14 +482,14 @@ wss.on('connection', (ws, req) => {
             type: 'message',
             data: {
               id: `msg-ack-${Date.now()}`,
-              content: '⏳ Message sent to Matrix. Waiting for response...',
+              content: '⏳ Message envoyé à Matrix. En attente de réponse...',
               sender: 'system',
               timestamp: new Date().toISOString(),
               read: true
             }
           }));
 
-          console.log(`📤 Queued for Matrix: "${msg.content}"`);
+          console.log(`💾 Message saved + 📤 queued for Matrix: "${msg.content}"`);
         }
       } catch (error) {
         console.error(`❌ Message error: ${error.message}`);

@@ -2,6 +2,7 @@ import { useEffect } from "react"
 import { useChatStore } from "@/store/chatStore"
 import { matrixWebSocket } from "@/services/websocket"
 import { useAuth } from "./useAuth"
+import { apiClient } from "@/services/api"
 
 export const useChat = () => {
   const {
@@ -11,12 +12,32 @@ export const useChat = () => {
     isConnected,
     typingIndicator,
     addMessage,
+    setMessages,
     setError,
     setConnected,
     setTypingIndicator,
   } = useChatStore()
 
   const { token, apiUrl } = useAuth()
+
+  // Load chat history on mount
+  const loadHistory = async () => {
+    try {
+      if (!apiUrl || !token) return
+      
+      apiClient.setBaseUrl(apiUrl)
+      const response = await apiClient.get("/api/chat/history")
+      if (response.data.messages) {
+        setMessages(response.data.messages)
+      }
+    } catch (error) {
+      console.error("Failed to load chat history:", error)
+    }
+  }
+
+  useEffect(() => {
+    loadHistory()
+  }, [apiUrl, token])
 
   useEffect(() => {
     if (!token || !apiUrl) return
