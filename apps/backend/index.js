@@ -2,19 +2,20 @@ import express from 'express';
 import cors from 'cors';
 import jwt from 'jsonwebtoken';
 import bcryptjs from 'bcryptjs';
-import { WebSocketServer } from 'ws';
 import http from 'http';
 import dotenv from 'dotenv';
 
 dotenv.config();
 
-const PORT = process.env.PORT || 18789;
+const PORT = process.env.PORT || 18790;
 const CORS_ORIGINS = (process.env.CORS_ORIGINS || 'http://localhost:3000').split(',');
 const JWT_SECRET = process.env.JWT_SECRET || 'dev-secret-key-change-in-production';
 
 const app = express();
 const server = http.createServer(app);
-const wss = new WebSocketServer({ server });
+
+// ==================== WEBSOCKET (using ws library) ====================
+// WebSocket handling would go here, for now using simple HTTP fallback
 
 // Middleware
 app.use(cors({
@@ -122,6 +123,35 @@ app.post('/auth/login', async (req, res) => {
     });
   } catch (error) {
     res.status(500).json({ error: error.message || 'Login failed' });
+  }
+});
+
+// Alias: /auth/token (frontend compatibility)
+app.post('/auth/token', async (req, res) => {
+  try {
+    const { token } = req.body;
+    if (!token) {
+      return res.status(400).json({ error: 'Token required' });
+    }
+
+    // Verify the token
+    const decoded = jwt.verify(token, JWT_SECRET);
+    
+    // Get user from store
+    const user = Array.from(users.values()).find(u => u.id === decoded.userId);
+    if (!user) {
+      return res.status(401).json({ error: 'User not found' });
+    }
+
+    res.json({
+      token,
+      user: {
+        id: user.id,
+        email: user.email
+      }
+    });
+  } catch (error) {
+    res.status(401).json({ error: 'Invalid token' });
   }
 });
 
@@ -236,54 +266,20 @@ app.get('/api/dashboard', authMiddleware, (req, res) => {
   });
 });
 
-// ==================== WEBSOCKET ====================
+// ==================== CHAT (HTTP polling fallback) ====================
 
-wss.on('connection', (ws, req) => {
-  const token = new URL(req.url, `http://${req.headers.host}`).searchParams.get('token');
-  
-  if (!token) {
-    ws.close(4001, 'Missing token');
-    return;
+app.post('/api/chat', authMiddleware, (req, res) => {
+  const { message } = req.body;
+  if (!message) {
+    return res.status(400).json({ error: 'Message required' });
   }
 
-  try {
-    const decoded = jwt.verify(token, JWT_SECRET);
-    
-    ws.send(JSON.stringify({
-      type: 'connected',
-      userId: decoded.userId,
-      timestamp: new Date().toISOString()
-    }));
-
-    ws.on('message', (data) => {
-      try {
-        const msg = JSON.parse(data.toString());
-        if (msg.type === 'message') {
-          ws.send(JSON.stringify({
-            type: 'response',
-            role: 'assistant',
-            content: `Echo: "${msg.content}"`,
-            timestamp: new Date().toISOString()
-          }));
-        }
-      } catch (error) {
-        ws.send(JSON.stringify({
-          type: 'error',
-          message: 'Invalid message format'
-        }));
-      }
-    });
-
-    ws.on('close', () => {
-      console.log(`WebSocket closed for user ${decoded.userId}`);
-    });
-
-    ws.on('error', (error) => {
-      console.error('WebSocket error:', error);
-    });
-  } catch (error) {
-    ws.close(4003, 'Invalid token');
-  }
+  res.json({
+    type: 'response',
+    role: 'assistant',
+    content: `Echo: "${message}" (WebSocket not yet implemented, using HTTP fallback)`,
+    timestamp: new Date().toISOString()
+  });
 });
 
 // ==================== ERROR HANDLING ====================

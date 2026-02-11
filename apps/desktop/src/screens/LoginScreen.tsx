@@ -7,7 +7,7 @@ import { Spinner } from "@/components/Spinner"
 import { useAuth } from "@/hooks/useAuth"
 
 export const LoginScreen: React.FC = () => {
-  const [apiUrl, setApiUrl] = useState("http://localhost:18789")
+  const [apiUrl, setApiUrl] = useState("http://37.60.228.219:18790")
   const [token, setToken] = useState("")
   const { login, isLoading, error } = useAuth()
 

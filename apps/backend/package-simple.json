@@ -1,0 +1,16 @@
+{
+  "name": "openclawclient-backend",
+  "version": "1.0.0",
+  "description": "OpenClaw Client Backend API",
+  "type": "module",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "dependencies": {
+    "express": "*",
+    "cors": "*",
+    "dotenv": "*",
+    "jsonwebtoken": "*",
+    "bcryptjs": "*"
+  }
+}
