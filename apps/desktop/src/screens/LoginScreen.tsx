@@ -14,7 +14,7 @@ export const LoginScreen: React.FC = () => {
   const [isChecking, setIsChecking] = useState(true)
   const [localError, setLocalError] = useState<string | null>(null)
   const [localLoading, setLocalLoading] = useState(false)
-  const { setToken, setApiUrl, setUser } = useAuthStore()
+  const { setToken, setApiUrl: storeSetApiUrl, setUser } = useAuthStore()
 
   // Auto-login if token exists in localStorage
   useEffect(() => {
@@ -59,7 +59,7 @@ export const LoginScreen: React.FC = () => {
       
       // Update auth store
       setToken(data.token)
-      setApiUrl(apiUrl)
+      storeSetApiUrl(apiUrl)
       setUser({
         id: data.user.id,
         email: data.user.email,
