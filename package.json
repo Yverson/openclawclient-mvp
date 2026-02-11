@@ -1,0 +1,21 @@
+{
+  "name": "openclawclient-mvp",
+  "version": "0.1.0",
+  "description": "OpenClaw Client MVP - Monorepo",
+  "private": true,
+  "workspaces": [
+    "apps/*"
+  ],
+  "scripts": {
+    "dev": "turbo run dev",
+    "build:web": "cd apps/desktop && npm run build:web",
+    "build:electron": "cd apps/desktop && npm run build:electron",
+    "start:web": "cd apps/desktop && npm start || npm run preview",
+    "lint": "turbo run lint",
+    "type-check": "turbo run type-check",
+    "test": "turbo run test"
+  },
+  "devDependencies": {
+    "turbo": "^1.10.0"
+  }
+}

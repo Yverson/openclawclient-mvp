@@ -3,17 +3,21 @@ FROM node:20-bookworm AS builder
 
 WORKDIR /app
 
-# Copy package files
+# Copy package files (root + desktop)
 COPY package.json package-lock.json ./
+COPY apps/desktop/package.json apps/desktop/package-lock.json ./apps/desktop/
 
-# Install dependencies
-RUN npm ci
+# Install dependencies (root workspace)
+RUN npm ci --legacy-peer-deps || npm install --legacy-peer-deps
 
 # Copy project files
 COPY . .
 
+# Install desktop dependencies
+RUN cd apps/desktop && npm ci --legacy-peer-deps || npm install --legacy-peer-deps
+
 # Build applications
-RUN npm run build:web && npm run build:electron
+RUN cd apps/desktop && npm run build:web
 
 # Stage 2: Runtime
 FROM node:20-alpine
