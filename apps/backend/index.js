@@ -359,7 +359,7 @@ app.get('/api/chat/history', authMiddleware, (req, res) => {
 const messageQueue = [];
 const clientConnections = new Map(); // userId -> ws connection
 
-// API: Get pending messages for Matrix (with context)
+// API: Get pending messages for Matrix (with FULL context)
 app.get('/api/matrix/messages', (req, res) => {
   const messages = [];
   
@@ -373,12 +373,12 @@ app.get('/api/matrix/messages', (req, res) => {
     messages.push({
       ...msg,
       user: user ? { id: user.id, email: user.email, name: user.name } : null,
-      conversationHistory: userHistory.slice(-10) // Last 10 messages for context
+      conversationHistory: userHistory // ALL messages for FULL context
     });
   }
   
   messageQueue.length = 0; // Clear queue
-  console.log(`📥 Matrix retrieved ${messages.length} messages with context`);
+  console.log(`📥 Matrix retrieved ${messages.length} messages with FULL context`);
   res.json({ messages });
 });
 
