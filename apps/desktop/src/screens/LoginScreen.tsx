@@ -39,9 +39,13 @@ export const LoginScreen: React.FC = () => {
 
       const data = await response.json()
       
-      // Save to localStorage
+      console.log("✅ Login successful:", data)
+      
+      // Save to localStorage FIRST
       localStorage.setItem("auth_token", data.token)
       localStorage.setItem("api_url", apiUrl)
+      console.log("✅ localStorage saved")
+      console.log("Token in storage:", localStorage.getItem("auth_token")?.substring(0, 20) + "...")
       
       // Update auth store
       setToken(data.token)
@@ -51,6 +55,11 @@ export const LoginScreen: React.FC = () => {
         email: data.user.email,
         role: "user"
       })
+      
+      console.log("✅ Auth store updated")
+      
+      // Small delay to ensure state updates
+      await new Promise(resolve => setTimeout(resolve, 100))
       
       setIsLoading(false)
     } catch (err: any) {

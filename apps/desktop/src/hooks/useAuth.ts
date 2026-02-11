@@ -16,12 +16,23 @@ export const useAuth = () => {
     setApiUrl,
   } = useAuthStore()
 
+  // Hydrate on mount
   useEffect(() => {
     hydrate()
-  }, [])
+  }, [hydrate])
 
+  // Compute derived state
   const isAdmin = user?.role === "admin"
   const isAuthenticated = !!token && !!user
+
+  // Log for debugging
+  useEffect(() => {
+    console.log("🔐 Auth state:", { 
+      authenticated: isAuthenticated, 
+      token: token ? token.substring(0, 20) + "..." : null,
+      user: user?.email 
+    })
+  }, [isAuthenticated, token, user])
 
   return {
     user,
