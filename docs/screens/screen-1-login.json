@@ -1,0 +1,334 @@
+{
+  "screen": "LoginScreen",
+  "version": "1.0",
+  "title": "Login - OpenClaw Client",
+  "description": "Initial authentication screen where users enter their OpenClaw token and API URL",
+  "targetResolutions": ["1920x1080", "1366x768", "1024x768"],
+  "darkMode": true,
+  
+  "layout": {
+    "type": "centered",
+    "width": "100vw",
+    "height": "100vh",
+    "background": "#0f172a",
+    "flexDirection": "column",
+    "justifyContent": "center",
+    "alignItems": "center",
+    "padding": 0
+  },
+
+  "components": [
+    {
+      "id": "card-login",
+      "type": "Card",
+      "x": "50%",
+      "y": "50%",
+      "width": "400px",
+      "maxWidth": "90vw",
+      "padding": "48px",
+      "background": "#1e293b",
+      "border": "1px solid #334155",
+      "borderRadius": "8px",
+      "shadow": "xl",
+      "zIndex": 10,
+      "children": [
+        {
+          "id": "header-logo",
+          "type": "Group",
+          "padding": "0 0 24px 0",
+          "borderBottom": "1px solid #334155",
+          "marginBottom": "24px",
+          "children": [
+            {
+              "id": "logo-icon",
+              "type": "Icon",
+              "name": "settings",
+              "size": "40px",
+              "color": "#0ea5e9",
+              "marginRight": "12px"
+            },
+            {
+              "id": "logo-text",
+              "type": "Text",
+              "text": "OpenClaw Client",
+              "fontSize": "24px",
+              "fontWeight": "bold",
+              "color": "#f1f5f9",
+              "lineHeight": 1.2
+            }
+          ]
+        },
+        {
+          "id": "subtitle",
+          "type": "Text",
+          "text": "Sign in to your account",
+          "fontSize": "14px",
+          "color": "#cbd5e1",
+          "marginBottom": "32px"
+        },
+        {
+          "id": "form-group-url",
+          "type": "Group",
+          "marginBottom": "20px",
+          "children": [
+            {
+              "id": "label-url",
+              "type": "Label",
+              "text": "OpenClaw API URL",
+              "fontSize": "13px",
+              "fontWeight": "500",
+              "color": "#cbd5e1",
+              "marginBottom": "8px",
+              "htmlFor": "input-url"
+            },
+            {
+              "id": "input-url",
+              "type": "Input",
+              "placeholder": "http://localhost:18789",
+              "type": "text",
+              "width": "100%",
+              "padding": "10px 12px",
+              "borderRadius": "4px",
+              "border": "1px solid #334155",
+              "background": "#0f172a",
+              "color": "#f1f5f9",
+              "fontSize": "14px",
+              "focusBackground": "#1e293b",
+              "focusBorder": "1px solid #0ea5e9",
+              "focusShadow": "0 0 0 3px rgba(14, 165, 233, 0.1)",
+              "icon": {
+                "position": "prefix",
+                "name": "globe",
+                "size": "16px",
+                "color": "#64748b"
+              }
+            }
+          ]
+        },
+        {
+          "id": "form-group-token",
+          "type": "Group",
+          "marginBottom": "24px",
+          "children": [
+            {
+              "id": "label-token",
+              "type": "Label",
+              "text": "API Token",
+              "fontSize": "13px",
+              "fontWeight": "500",
+              "color": "#cbd5e1",
+              "marginBottom": "8px",
+              "htmlFor": "input-token"
+            },
+            {
+              "id": "input-token",
+              "type": "Input",
+              "placeholder": "Paste your OpenClaw token here",
+              "type": "password",
+              "width": "100%",
+              "padding": "10px 12px",
+              "borderRadius": "4px",
+              "border": "1px solid #334155",
+              "background": "#0f172a",
+              "color": "#f1f5f9",
+              "fontSize": "14px",
+              "focusBackground": "#1e293b",
+              "focusBorder": "1px solid #0ea5e9",
+              "focusShadow": "0 0 0 3px rgba(14, 165, 233, 0.1)",
+              "icon": {
+                "position": "suffix",
+                "name": "eye",
+                "size": "16px",
+                "color": "#64748b",
+                "onClick": "togglePasswordVisibility"
+              }
+            },
+            {
+              "id": "hint-token",
+              "type": "Text",
+              "text": "Get your token from the OpenClaw web dashboard (Settings > API Tokens)",
+              "fontSize": "12px",
+              "color": "#64748b",
+              "marginTop": "6px"
+            }
+          ]
+        },
+        {
+          "id": "button-login",
+          "type": "Button",
+          "text": "Sign In",
+          "variant": "primary",
+          "size": "md",
+          "width": "100%",
+          "padding": "10px 16px",
+          "borderRadius": "4px",
+          "fontSize": "14px",
+          "fontWeight": "500",
+          "background": "#0ea5e9",
+          "color": "#fff",
+          "hover": {
+            "background": "#0284c7"
+          },
+          "active": {
+            "background": "#0369a1"
+          },
+          "disabled": {
+            "background": "#334155",
+            "cursor": "not-allowed",
+            "opacity": 0.6
+          },
+          "onClick": "handleLogin",
+          "loading": false
+        },
+        {
+          "id": "checkbox-remember",
+          "type": "Group",
+          "marginTop": "16px",
+          "display": "flex",
+          "alignItems": "center",
+          "gap": "8px",
+          "children": [
+            {
+              "id": "input-remember",
+              "type": "Checkbox",
+              "id": "remember-me",
+              "checked": false,
+              "onChange": "toggleRemember"
+            },
+            {
+              "id": "label-remember",
+              "type": "Label",
+              "text": "Remember this device",
+              "fontSize": "13px",
+              "color": "#cbd5e1",
+              "htmlFor": "remember-me",
+              "cursor": "pointer"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "footer-info",
+      "type": "Group",
+      "position": "absolute",
+      "bottom": "24px",
+      "left": "50%",
+      "transform": "translateX(-50%)",
+      "textAlign": "center",
+      "children": [
+        {
+          "id": "footer-text",
+          "type": "Text",
+          "text": "OpenClaw Client v0.1.0 • Enterprise Desktop Application",
+          "fontSize": "12px",
+          "color": "#64748b"
+        }
+      ]
+    }
+  ],
+
+  "states": {
+    "idle": {
+      "description": "Default state",
+      "buttonLoading": false,
+      "errors": null
+    },
+    "loading": {
+      "description": "Login in progress",
+      "buttonLoading": true,
+      "buttonDisabled": true,
+      "spinner": true
+    },
+    "error": {
+      "description": "Login failed",
+      "alert": {
+        "type": "error",
+        "title": "Authentication Failed",
+        "message": "Invalid token or API URL. Please check and try again.",
+        "icon": "alert-circle",
+        "action": "Retry"
+      }
+    },
+    "success": {
+      "description": "Login succeeded, redirecting",
+      "animation": "fadeOut",
+      "duration": "200ms"
+    }
+  },
+
+  "interactions": {
+    "onUrlChange": {
+      "action": "updateField",
+      "field": "apiUrl",
+      "validation": "url"
+    },
+    "onTokenChange": {
+      "action": "updateField",
+      "field": "token",
+      "validation": "required"
+    },
+    "onLogin": {
+      "action": "submitForm",
+      "validate": ["apiUrl", "token"],
+      "endpoint": "POST /auth/token",
+      "onSuccess": "redirectTo('dashboard')",
+      "onError": "showAlert('error')"
+    },
+    "onTogglePasswordVisibility": {
+      "action": "toggleInputType",
+      "inputId": "input-token",
+      "types": ["password", "text"]
+    },
+    "onRememberDevice": {
+      "action": "storeInLocalStorage",
+      "key": "remembered_device",
+      "value": true
+    }
+  },
+
+  "accessibility": {
+    "role": "main",
+    "ariaLabel": "Login form",
+    "tabIndex": [
+      { "element": "input-url", "order": 1 },
+      { "element": "input-token", "order": 2 },
+      { "element": "input-remember", "order": 3 },
+      { "element": "button-login", "order": 4 }
+    ],
+    "focusIndicator": "2px solid #0ea5e9",
+    "contrastRatio": "4.5:1"
+  },
+
+  "responsive": {
+    "1920x1080": {
+      "card": { "width": "400px", "padding": "48px" }
+    },
+    "1366x768": {
+      "card": { "width": "380px", "padding": "40px" }
+    },
+    "1024x768": {
+      "card": { "width": "340px", "padding": "32px" }
+    }
+  },
+
+  "theme": {
+    "mode": "dark",
+    "primaryColor": "#0ea5e9",
+    "backgroundColor": "#0f172a",
+    "surfaceColor": "#1e293b",
+    "textColor": "#f1f5f9",
+    "secondaryTextColor": "#cbd5e1",
+    "borderColor": "#334155"
+  },
+
+  "notes": [
+    "Token input uses password type for security",
+    "Eye icon toggles visibility",
+    "Remember device checkbox persists session",
+    "Form validates both fields before submission",
+    "Error messages display in alert banner",
+    "Loading state disables all inputs",
+    "Success redirects to Dashboard after 200ms fade"
+  ]
+}

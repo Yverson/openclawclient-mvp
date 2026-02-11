@@ -1,0 +1,578 @@
+{
+  "screen": "MailFilterScreen",
+  "version": "1.0",
+  "title": "Mail Filter - Local Email Search & Management",
+  "description": "Search and filter emails from Outlook/Gmail/Himalaya with quick actions",
+  "targetResolutions": ["1920x1080", "1366x768", "1024x768"],
+  "darkMode": true,
+
+  "layout": {
+    "type": "split",
+    "columns": 2,
+    "background": "#0f172a",
+    "padding": "24px"
+  },
+
+  "components": [
+    {
+      "id": "header",
+      "type": "Group",
+      "gridColumn": "1 / -1",
+      "marginBottom": "24px",
+      "children": [
+        {
+          "id": "title",
+          "type": "Text",
+          "text": "Mail Filter",
+          "fontSize": "28px",
+          "fontWeight": "bold",
+          "color": "#f1f5f9"
+        }
+      ]
+    },
+
+    {
+      "id": "left-panel",
+      "type": "Group",
+      "gridColumn": 1,
+      "paddingRight": "16px",
+      "borderRight": "1px solid #334155",
+      "children": [
+        {
+          "id": "search-section",
+          "type": "Group",
+          "marginBottom": "24px",
+          "children": [
+            {
+              "id": "search-input-wrapper",
+              "type": "Group",
+              "position": "relative",
+              "marginBottom": "16px",
+              "children": [
+                {
+                  "id": "search-input",
+                  "type": "Input",
+                  "placeholder": "Search emails...",
+                  "type": "search",
+                  "width": "100%",
+                  "padding": "10px 12px 10px 36px",
+                  "borderRadius": "4px",
+                  "border": "1px solid #334155",
+                  "background": "#1e293b",
+                  "color": "#f1f5f9",
+                  "fontSize": "14px",
+                  "focusBorder": "1px solid #0ea5e9",
+                  "icon": {
+                    "position": "prefix",
+                    "name": "search",
+                    "size": "16px",
+                    "color": "#64748b"
+                  }
+                }
+              ]
+            },
+            {
+              "id": "quick-filters",
+              "type": "Group",
+              "display": "flex",
+              "gap": "8px",
+              "flexWrap": "wrap",
+              "children": [
+                {
+                  "id": "filter-unread",
+                  "type": "Button",
+                  "text": "Unread",
+                  "variant": "secondary",
+                  "size": "sm",
+                  "onClick": "filterUnread"
+                },
+                {
+                  "id": "filter-starred",
+                  "type": "Button",
+                  "text": "Starred",
+                  "variant": "secondary",
+                  "size": "sm",
+                  "onClick": "filterStarred"
+                },
+                {
+                  "id": "filter-today",
+                  "type": "Button",
+                  "text": "Today",
+                  "variant": "secondary",
+                  "size": "sm",
+                  "onClick": "filterToday"
+                }
+              ]
+            }
+          ]
+        },
+
+        {
+          "id": "advanced-filters",
+          "type": "Card",
+          "padding": "16px",
+          "border": "1px solid #334155",
+          "background": "#1e293b",
+          "marginBottom": "24px",
+          "children": [
+            {
+              "id": "filters-title",
+              "type": "Text",
+              "text": "Advanced Filters",
+              "fontSize": "13px",
+              "fontWeight": "600",
+              "color": "#cbd5e1",
+              "marginBottom": "12px"
+            },
+            {
+              "id": "filter-from",
+              "type": "Group",
+              "marginBottom": "12px",
+              "children": [
+                {
+                  "id": "label-from",
+                  "type": "Label",
+                  "text": "From",
+                  "fontSize": "12px",
+                  "fontWeight": "500",
+                  "color": "#cbd5e1",
+                  "marginBottom": "4px"
+                },
+                {
+                  "id": "input-from",
+                  "type": "Input",
+                  "placeholder": "sender@example.com",
+                  "type": "email",
+                  "width": "100%",
+                  "padding": "8px",
+                  "borderRadius": "4px",
+                  "border": "1px solid #334155",
+                  "background": "#0f172a",
+                  "color": "#f1f5f9",
+                  "fontSize": "12px"
+                }
+              ]
+            },
+            {
+              "id": "filter-date",
+              "type": "Group",
+              "marginBottom": "12px",
+              "children": [
+                {
+                  "id": "label-date",
+                  "type": "Label",
+                  "text": "Date Range",
+                  "fontSize": "12px",
+                  "fontWeight": "500",
+                  "color": "#cbd5e1",
+                  "marginBottom": "4px"
+                },
+                {
+                  "id": "date-range",
+                  "type": "Group",
+                  "display": "flex",
+                  "gap": "8px",
+                  "children": [
+                    {
+                      "id": "input-from-date",
+                      "type": "Input",
+                      "type": "date",
+                      "width": "50%",
+                      "padding": "8px",
+                      "borderRadius": "4px",
+                      "border": "1px solid #334155",
+                      "background": "#0f172a",
+                      "color": "#f1f5f9",
+                      "fontSize": "12px"
+                    },
+                    {
+                      "id": "input-to-date",
+                      "type": "Input",
+                      "type": "date",
+                      "width": "50%",
+                      "padding": "8px",
+                      "borderRadius": "4px",
+                      "border": "1px solid #334155",
+                      "background": "#0f172a",
+                      "color": "#f1f5f9",
+                      "fontSize": "12px"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "id": "filter-actions",
+              "type": "Group",
+              "display": "flex",
+              "gap": "8px",
+              "children": [
+                {
+                  "id": "button-apply",
+                  "type": "Button",
+                  "text": "Apply",
+                  "variant": "primary",
+                  "size": "sm",
+                  "flex": 1,
+                  "onClick": "applyFilters"
+                },
+                {
+                  "id": "button-reset",
+                  "type": "Button",
+                  "text": "Reset",
+                  "variant": "secondary",
+                  "size": "sm",
+                  "flex": 1,
+                  "onClick": "resetFilters"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+
+    {
+      "id": "right-panel",
+      "type": "Group",
+      "gridColumn": 2,
+      "paddingLeft": "16px",
+      "display": "flex",
+      "flexDirection": "column",
+      "children": [
+        {
+          "id": "results-header",
+          "type": "Group",
+          "display": "flex",
+          "justifyContent": "space-between",
+          "alignItems": "center",
+          "marginBottom": "16px",
+          "paddingBottom": "12px",
+          "borderBottom": "1px solid #334155",
+          "children": [
+            {
+              "id": "results-count",
+              "type": "Text",
+              "text": "24 results",
+              "fontSize": "14px",
+              "color": "#cbd5e1",
+              "fontWeight": "500"
+            },
+            {
+              "id": "sort-dropdown",
+              "type": "Dropdown",
+              "trigger": "Sort by...",
+              "variant": "secondary",
+              "size": "sm",
+              "options": [
+                { "id": "sort-newest", "label": "Newest First" },
+                { "id": "sort-oldest", "label": "Oldest First" },
+                { "id": "sort-sender", "label": "Sender A-Z" }
+              ]
+            }
+          ]
+        },
+
+        {
+          "id": "email-list",
+          "type": "ScrollableContainer",
+          "flex": 1,
+          "overflowY": "auto",
+          "gap": "8px",
+          "children": [
+            {
+              "id": "email-item-1",
+              "type": "Group",
+              "padding": "12px",
+              "border": "1px solid #334155",
+              "background": "#1e293b",
+              "borderRadius": "4px",
+              "cursor": "pointer",
+              "hover": {
+                "background": "#293548",
+                "borderColor": "#475569"
+              },
+              "onClick": "selectEmail(1)",
+              "display": "flex",
+              "gap": "12px",
+              "children": [
+                {
+                  "id": "email-avatar-1",
+                  "type": "Avatar",
+                  "src": "https://api.dicebear.com/7.x/avataaars/svg?seed=user1",
+                  "size": "40px",
+                  "borderRadius": "full"
+                },
+                {
+                  "id": "email-content-1",
+                  "type": "Group",
+                  "flex": 1,
+                  "minWidth": 0,
+                  "children": [
+                    {
+                      "id": "email-from-1",
+                      "type": "Text",
+                      "text": "john@example.com",
+                      "fontSize": "13px",
+                      "fontWeight": "600",
+                      "color": "#f1f5f9",
+                      "truncate": true
+                    },
+                    {
+                      "id": "email-subject-1",
+                      "type": "Text",
+                      "text": "Project Update: Q1 Planning",
+                      "fontSize": "12px",
+                      "color": "#cbd5e1",
+                      "marginTop": "2px",
+                      "truncate": true
+                    },
+                    {
+                      "id": "email-preview-1",
+                      "type": "Text",
+                      "text": "Hi, here's the summary of next quarter's...",
+                      "fontSize": "11px",
+                      "color": "#64748b",
+                      "marginTop": "2px",
+                      "truncate": true
+                    }
+                  ]
+                },
+                {
+                  "id": "email-meta-1",
+                  "type": "Group",
+                  "display": "flex",
+                  "flexDirection": "column",
+                  "alignItems": "flex-end",
+                  "gap": "4px",
+                  "children": [
+                    {
+                      "id": "email-time-1",
+                      "type": "Text",
+                      "text": "2h ago",
+                      "fontSize": "11px",
+                      "color": "#64748b"
+                    },
+                    {
+                      "id": "email-unread-1",
+                      "type": "Badge",
+                      "text": "NEW",
+                      "variant": "info",
+                      "size": "sm"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "id": "email-item-2",
+              "type": "Group",
+              "padding": "12px",
+              "border": "1px solid #334155",
+              "background": "#1e293b",
+              "borderRadius": "4px",
+              "cursor": "pointer",
+              "hover": { "background": "#293548" },
+              "onClick": "selectEmail(2)",
+              "display": "flex",
+              "gap": "12px",
+              "children": [
+                {
+                  "id": "email-avatar-2",
+                  "type": "Avatar",
+                  "src": "https://api.dicebear.com/7.x/avataaars/svg?seed=user2",
+                  "size": "40px",
+                  "borderRadius": "full"
+                },
+                {
+                  "id": "email-content-2",
+                  "type": "Group",
+                  "flex": 1,
+                  "minWidth": 0,
+                  "children": [
+                    {
+                      "id": "email-from-2",
+                      "type": "Text",
+                      "text": "marketing@company.com",
+                      "fontSize": "13px",
+                      "fontWeight": "600",
+                      "color": "#f1f5f9",
+                      "truncate": true
+                    },
+                    {
+                      "id": "email-subject-2",
+                      "type": "Text",
+                      "text": "Campaign Performance Report",
+                      "fontSize": "12px",
+                      "color": "#cbd5e1",
+                      "marginTop": "2px",
+                      "truncate": true
+                    },
+                    {
+                      "id": "email-preview-2",
+                      "type": "Text",
+                      "text": "Q1 campaign metrics are in - great results!",
+                      "fontSize": "11px",
+                      "color": "#64748b",
+                      "marginTop": "2px",
+                      "truncate": true
+                    }
+                  ]
+                },
+                {
+                  "id": "email-meta-2",
+                  "type": "Group",
+                  "display": "flex",
+                  "flexDirection": "column",
+                  "alignItems": "flex-end",
+                  "gap": "4px",
+                  "children": [
+                    {
+                      "id": "email-time-2",
+                      "type": "Text",
+                      "text": "1d ago",
+                      "fontSize": "11px",
+                      "color": "#64748b"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+
+        {
+          "id": "email-preview-panel",
+          "type": "Card",
+          "padding": "16px",
+          "border": "1px solid #334155",
+          "background": "#1e293b",
+          "marginTop": "16px",
+          "maxHeight": "300px",
+          "overflowY": "auto",
+          "display": true,
+          "children": [
+            {
+              "id": "preview-title",
+              "type": "Text",
+              "text": "Email Preview",
+              "fontSize": "12px",
+              "fontWeight": "600",
+              "color": "#cbd5e1",
+              "marginBottom": "8px"
+            },
+            {
+              "id": "preview-from",
+              "type": "Text",
+              "text": "From: john@example.com",
+              "fontSize": "11px",
+              "color": "#cbd5e1"
+            },
+            {
+              "id": "preview-date",
+              "type": "Text",
+              "text": "Date: Feb 11, 2026 - 2:30 PM",
+              "fontSize": "11px",
+              "color": "#64748b",
+              "marginTop": "4px"
+            },
+            {
+              "id": "preview-subject",
+              "type": "Text",
+              "text": "Subject: Project Update: Q1 Planning",
+              "fontSize": "11px",
+              "color": "#64748b",
+              "marginTop": "4px",
+              "fontWeight": "600"
+            },
+            {
+              "id": "preview-divider",
+              "type": "Divider",
+              "marginTop": "8px",
+              "marginBottom": "8px"
+            },
+            {
+              "id": "preview-body",
+              "type": "Text",
+              "text": "Hi team,\\n\\nHere's the summary of next quarter's planning. Please review and provide feedback by Friday. Key points:\\n- New feature roadmap\\n- Resource allocation\\n- Timeline adjustments",
+              "fontSize": "11px",
+              "color": "#cbd5e1",
+              "lineHeight": 1.5,
+              "whiteSpace": "pre-wrap"
+            },
+            {
+              "id": "preview-actions",
+              "type": "Group",
+              "display": "flex",
+              "gap": "8px",
+              "marginTop": "12px",
+              "paddingTop": "12px",
+              "borderTop": "1px solid #334155",
+              "children": [
+                {
+                  "id": "action-archive",
+                  "type": "Button",
+                  "text": "Archive",
+                  "variant": "secondary",
+                  "size": "sm",
+                  "flex": 1,
+                  "onClick": "archiveEmail"
+                },
+                {
+                  "id": "action-delete",
+                  "type": "Button",
+                  "text": "Delete",
+                  "variant": "danger",
+                  "size": "sm",
+                  "flex": 1,
+                  "onClick": "deleteEmail"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+
+  "states": {
+    "loading": {
+      "description": "Searching emails",
+      "spinner": true
+    },
+    "loaded": {
+      "description": "Results displayed",
+      "showResults": true
+    },
+    "empty": {
+      "description": "No results found",
+      "emptyState": {
+        "icon": "inbox",
+        "title": "No emails found",
+        "message": "Try adjusting your filters or search terms"
+      }
+    },
+    "error": {
+      "description": "Search failed",
+      "alert": {
+        "type": "error",
+        "message": "Failed to search emails. Please try again."
+      }
+    }
+  },
+
+  "theme": {
+    "mode": "dark",
+    "primaryColor": "#0ea5e9"
+  },
+
+  "notes": [
+    "All email operations are local - no network required",
+    "Search executes instantly (<500ms for typical queries)",
+    "Supports filtering by sender, date range, keywords, and read status",
+    "Quick action buttons (unread, starred, today) apply filters instantly",
+    "Email preview shows in lower panel with archive/delete options",
+    "Scrollable email list maintains position when previewing",
+    "User-specific mailbox (Outlook/Gmail/Himalaya) integration"
+  ]
+}

@@ -1,0 +1,24 @@
+# OpenClaw Client MVP - Code Owners
+# https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners
+
+# Global code owners
+* @yverson
+
+# Web application
+/apps/web/ @yverson
+
+# Desktop application
+/apps/desktop/ @yverson
+
+# Documentation
+/docs/ @yverson
+
+# CI/CD and DevOps
+/.github/ @yverson
+/Dockerfile @yverson
+/docker-compose.yml @yverson
+
+# Configuration files
+/package.json @yverson
+/tsconfig.json @yverson
+/vite.config.ts @yverson

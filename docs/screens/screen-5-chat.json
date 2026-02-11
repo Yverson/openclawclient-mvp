@@ -1,0 +1,616 @@
+{
+  "screen": "ChatScreen",
+  "version": "1.0",
+  "title": "Chat - Matrix WebSocket Integration",
+  "description": "Real-time chat with Claude via Matrix integration. Supports text and file attachments.",
+  "targetResolutions": ["1920x1080", "1366x768", "1024x768"],
+  "darkMode": true,
+
+  "layout": {
+    "type": "flex",
+    "flexDirection": "column",
+    "background": "#0f172a",
+    "padding": "24px"
+  },
+
+  "components": [
+    {
+      "id": "header",
+      "type": "Group",
+      "marginBottom": "16px",
+      "display": "flex",
+      "justifyContent": "space-between",
+      "alignItems": "center",
+      "paddingBottom": "16px",
+      "borderBottom": "1px solid #334155",
+      "children": [
+        {
+          "id": "header-title",
+          "type": "Group",
+          "children": [
+            {
+              "id": "title",
+              "type": "Text",
+              "text": "Chat",
+              "fontSize": "28px",
+              "fontWeight": "bold",
+              "color": "#f1f5f9"
+            },
+            {
+              "id": "status",
+              "type": "Group",
+              "display": "flex",
+              "alignItems": "center",
+              "gap": "8px",
+              "marginTop": "4px",
+              "children": [
+                {
+                  "id": "status-dot",
+                  "type": "Circle",
+                  "size": "8px",
+                  "background": "#10b981"
+                },
+                {
+                  "id": "status-text",
+                  "type": "Text",
+                  "text": "Connected to Matrix",
+                  "fontSize": "12px",
+                  "color": "#cbd5e1"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "header-actions",
+          "type": "Group",
+          "display": "flex",
+          "gap": "8px",
+          "children": [
+            {
+              "id": "button-clear",
+              "type": "Button",
+              "variant": "secondary",
+              "size": "sm",
+              "text": "Clear History",
+              "onClick": "clearChatHistory"
+            },
+            {
+              "id": "button-export",
+              "type": "Button",
+              "variant": "secondary",
+              "size": "sm",
+              "icon": "download",
+              "onClick": "exportChat"
+            }
+          ]
+        }
+      ]
+    },
+
+    {
+      "id": "message-container",
+      "type": "ScrollableContainer",
+      "flex": 1,
+      "overflowY": "auto",
+      "padding": "16px 0",
+      "gap": "16px",
+      "children": [
+        {
+          "id": "message-welcome",
+          "type": "Group",
+          "textAlign": "center",
+          "marginBottom": "32px",
+          "children": [
+            {
+              "id": "welcome-icon",
+              "type": "Icon",
+              "name": "message-square",
+              "size": "48px",
+              "color": "#334155",
+              "marginBottom": "12px"
+            },
+            {
+              "id": "welcome-title",
+              "type": "Text",
+              "text": "Welcome to Chat",
+              "fontSize": "18px",
+              "fontWeight": "600",
+              "color": "#cbd5e1"
+            },
+            {
+              "id": "welcome-text",
+              "type": "Text",
+              "text": "Start a conversation with Claude. Ask questions, request help with files, or get status updates.",
+              "fontSize": "13px",
+              "color": "#64748b",
+              "marginTop": "8px",
+              "maxWidth": "400px",
+              "textAlign": "center"
+            }
+          ]
+        },
+
+        {
+          "id": "message-1-user",
+          "type": "Group",
+          "display": "flex",
+          "justifyContent": "flex-end",
+          "gap": "12px",
+          "children": [
+            {
+              "id": "message-bubble-1",
+              "type": "Card",
+              "padding": "12px 16px",
+              "borderRadius": "12px",
+              "background": "#0ea5e9",
+              "color": "#fff",
+              "maxWidth": "60%",
+              "children": [
+                {
+                  "id": "message-text-1",
+                  "type": "Text",
+                  "text": "Filter my emails from the last 3 days",
+                  "fontSize": "14px",
+                  "color": "#fff",
+                  "lineHeight": 1.5
+                },
+                {
+                  "id": "message-time-1",
+                  "type": "Text",
+                  "text": "2:30 PM",
+                  "fontSize": "11px",
+                  "color": "rgba(255,255,255,0.6)",
+                  "marginTop": "6px",
+                  "textAlign": "right"
+                }
+              ]
+            }
+          ]
+        },
+
+        {
+          "id": "message-1-response",
+          "type": "Group",
+          "display": "flex",
+          "justifyContent": "flex-start",
+          "gap": "12px",
+          "children": [
+            {
+              "id": "avatar-1",
+              "type": "Avatar",
+              "initials": "CV",
+              "size": "32px",
+              "background": "#3b82f6",
+              "color": "#fff"
+            },
+            {
+              "id": "message-bubble-response-1",
+              "type": "Card",
+              "padding": "12px 16px",
+              "borderRadius": "12px",
+              "background": "#1e293b",
+              "border": "1px solid #334155",
+              "maxWidth": "60%",
+              "children": [
+                {
+                  "id": "message-title-1",
+                  "type": "Text",
+                  "text": "Claude",
+                  "fontSize": "12px",
+                  "fontWeight": "600",
+                  "color": "#cbd5e1",
+                  "marginBottom": "6px"
+                },
+                {
+                  "id": "message-text-response-1",
+                  "type": "Text",
+                  "text": "I found 24 emails from the last 3 days. Here are the important ones:\\n\\n1. john@example.com - \"Project Update\" (2h ago)\\n2. marketing@company.com - \"Q1 Campaign Report\" (1d ago)\\n\\nWould you like me to show you more details or filter further?",
+                  "fontSize": "14px",
+                  "color": "#cbd5e1",
+                  "lineHeight": 1.5,
+                  "whiteSpace": "pre-wrap"
+                },
+                {
+                  "id": "message-time-response-1",
+                  "type": "Text",
+                  "text": "2:30 PM",
+                  "fontSize": "11px",
+                  "color": "#64748b",
+                  "marginTop": "6px"
+                }
+              ]
+            }
+          ]
+        },
+
+        {
+          "id": "message-2-user",
+          "type": "Group",
+          "display": "flex",
+          "justifyContent": "flex-end",
+          "gap": "12px",
+          "children": [
+            {
+              "id": "message-bubble-2",
+              "type": "Card",
+              "padding": "12px 16px",
+              "borderRadius": "12px",
+              "background": "#0ea5e9",
+              "color": "#fff",
+              "maxWidth": "60%",
+              "children": [
+                {
+                  "id": "message-text-2",
+                  "type": "Text",
+                  "text": "What's the server status?",
+                  "fontSize": "14px",
+                  "color": "#fff",
+                  "lineHeight": 1.5
+                },
+                {
+                  "id": "message-time-2",
+                  "type": "Text",
+                  "text": "2:32 PM",
+                  "fontSize": "11px",
+                  "color": "rgba(255,255,255,0.6)",
+                  "marginTop": "6px",
+                  "textAlign": "right"
+                }
+              ]
+            }
+          ]
+        },
+
+        {
+          "id": "message-2-response",
+          "type": "Group",
+          "display": "flex",
+          "justifyContent": "flex-start",
+          "gap": "12px",
+          "children": [
+            {
+              "id": "avatar-2",
+              "type": "Avatar",
+              "initials": "CV",
+              "size": "32px",
+              "background": "#3b82f6",
+              "color": "#fff"
+            },
+            {
+              "id": "message-bubble-response-2",
+              "type": "Group",
+              "display": "flex",
+              "flexDirection": "column",
+              "gap": "8px",
+              "maxWidth": "60%",
+              "children": [
+                {
+                  "id": "message-title-2",
+                  "type": "Text",
+                  "text": "Claude",
+                  "fontSize": "12px",
+                  "fontWeight": "600",
+                  "color": "#cbd5e1"
+                },
+                {
+                  "id": "status-card",
+                  "type": "Card",
+                  "padding": "12px 16px",
+                  "borderRadius": "8px",
+                  "background": "#1e293b",
+                  "border": "1px solid #334155",
+                  "children": [
+                    {
+                      "id": "status-servers",
+                      "type": "Group",
+                      "display": "grid",
+                      "gridTemplateColumns": "1fr 1fr",
+                      "gap": "12px",
+                      "children": [
+                        {
+                          "id": "status-prod",
+                          "type": "Group",
+                          "children": [
+                            {
+                              "id": "status-label-prod",
+                              "type": "Text",
+                              "text": "PROD (161.97.178.66)",
+                              "fontSize": "12px",
+                              "fontWeight": "600",
+                              "color": "#f1f5f9"
+                            },
+                            {
+                              "id": "status-value-prod",
+                              "type": "Group",
+                              "display": "flex",
+                              "alignItems": "center",
+                              "gap": "6px",
+                              "marginTop": "4px",
+                              "children": [
+                                {
+                                  "id": "status-dot-prod",
+                                  "type": "Circle",
+                                  "size": "6px",
+                                  "background": "#10b981"
+                                },
+                                {
+                                  "id": "status-text-prod",
+                                  "type": "Text",
+                                  "text": "UP (45 days)",
+                                  "fontSize": "11px",
+                                  "color": "#cbd5e1"
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "id": "status-sec",
+                          "type": "Group",
+                          "children": [
+                            {
+                              "id": "status-label-sec",
+                              "type": "Text",
+                              "text": "SEC (213.136.87)",
+                              "fontSize": "12px",
+                              "fontWeight": "600",
+                              "color": "#f1f5f9"
+                            },
+                            {
+                              "id": "status-value-sec",
+                              "type": "Group",
+                              "display": "flex",
+                              "alignItems": "center",
+                              "gap": "6px",
+                              "marginTop": "4px",
+                              "children": [
+                                {
+                                  "id": "status-dot-sec",
+                                  "type": "Circle",
+                                  "size": "6px",
+                                  "background": "#10b981"
+                                },
+                                {
+                                  "id": "status-text-sec",
+                                  "type": "Text",
+                                  "text": "UP (12 days)",
+                                  "fontSize": "11px",
+                                  "color": "#cbd5e1"
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "id": "status-button",
+                      "type": "Button",
+                      "text": "View Full Dashboard",
+                      "variant": "secondary",
+                      "size": "sm",
+                      "width": "100%",
+                      "marginTop": "8px",
+                      "onClick": "navigateToDashboard"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+
+        {
+          "id": "typing-indicator",
+          "type": "Group",
+          "display": "flex",
+          "alignItems": "center",
+          "gap": "12px",
+          "display": false,
+          "children": [
+            {
+              "id": "avatar-typing",
+              "type": "Avatar",
+              "initials": "CV",
+              "size": "32px",
+              "background": "#3b82f6",
+              "color": "#fff"
+            },
+            {
+              "id": "typing-bubble",
+              "type": "Group",
+              "padding": "12px 16px",
+              "borderRadius": "12px",
+              "background": "#1e293b",
+              "border": "1px solid #334155",
+              "display": "flex",
+              "gap": "4px",
+              "alignItems": "center",
+              "children": [
+                {
+                  "id": "typing-dot-1",
+                  "type": "Circle",
+                  "size": "8px",
+                  "background": "#64748b",
+                  "animation": "bounce 1.4s infinite"
+                },
+                {
+                  "id": "typing-dot-2",
+                  "type": "Circle",
+                  "size": "8px",
+                  "background": "#64748b",
+                  "animation": "bounce 1.4s infinite 0.2s"
+                },
+                {
+                  "id": "typing-dot-3",
+                  "type": "Circle",
+                  "size": "8px",
+                  "background": "#64748b",
+                  "animation": "bounce 1.4s infinite 0.4s"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+
+    {
+      "id": "input-area",
+      "type": "Group",
+      "marginTop": "16px",
+      "paddingTop": "16px",
+      "borderTop": "1px solid #334155",
+      "children": [
+        {
+          "id": "input-wrapper",
+          "type": "Group",
+          "display": "flex",
+          "gap": "8px",
+          "children": [
+            {
+              "id": "input-message",
+              "type": "TextArea",
+              "placeholder": "Type your message... (Shift+Enter for new line)",
+              "rows": 3,
+              "minHeight": "60px",
+              "maxHeight": "120px",
+              "width": "100%",
+              "padding": "12px 16px",
+              "borderRadius": "6px",
+              "border": "1px solid #334155",
+              "background": "#1e293b",
+              "color": "#f1f5f9",
+              "fontSize": "14px",
+              "focusBorder": "1px solid #0ea5e9",
+              "focusShadow": "0 0 0 3px rgba(14, 165, 233, 0.1)",
+              "resize": false,
+              "onKeyDown": "handleKeyDown"
+            },
+            {
+              "id": "input-actions",
+              "type": "Group",
+              "display": "flex",
+              "flexDirection": "column",
+              "gap": "8px",
+              "children": [
+                {
+                  "id": "button-send",
+                  "type": "Button",
+                  "variant": "primary",
+                  "size": "md",
+                  "icon": "send",
+                  "onClick": "sendMessage",
+                  "disabled": false,
+                  "title": "Send message"
+                },
+                {
+                  "id": "button-attach",
+                  "type": "Button",
+                  "variant": "secondary",
+                  "size": "md",
+                  "icon": "paperclip",
+                  "onClick": "attachFile",
+                  "title": "Attach file (admin only)"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "input-hint",
+          "type": "Text",
+          "text": "Press Enter to send, Shift+Enter for new line",
+          "fontSize": "11px",
+          "color": "#64748b",
+          "marginTop": "8px"
+        }
+      ]
+    }
+  ],
+
+  "websocket": {
+    "endpoint": "ws://localhost:18789/ws/matrix",
+    "protocol": "Matrix protocol",
+    "reconnectAttempts": 5,
+    "reconnectDelay": "3s",
+    "messageFormat": "json"
+  },
+
+  "states": {
+    "connected": {
+      "description": "WebSocket connected",
+      "statusIndicator": "🟢 Connected",
+      "statusColor": "#10b981"
+    },
+    "disconnected": {
+      "description": "WebSocket disconnected",
+      "statusIndicator": "🔴 Disconnected",
+      "statusColor": "#ef4444",
+      "alert": "Attempting to reconnect..."
+    },
+    "reconnecting": {
+      "description": "Attempting to reconnect",
+      "statusIndicator": "🟡 Reconnecting",
+      "statusColor": "#f59e0b"
+    },
+    "typing": {
+      "description": "Remote user typing",
+      "showTypingIndicator": true
+    }
+  },
+
+  "interactions": {
+    "onSendMessage": {
+      "action": "submitMessage",
+      "validate": "required",
+      "trim": true,
+      "maxLength": 4000,
+      "endpoint": "WebSocket /ws/matrix"
+    },
+    "onMessageReceived": {
+      "action": "addToHistory",
+      "scroll": "bottom",
+      "notification": "playSound"
+    },
+    "onAttachFile": {
+      "action": "fileDialog",
+      "maxSize": "25MB",
+      "permission": "adminOnly",
+      "supportedTypes": [".pdf", ".doc", ".txt", ".csv"]
+    },
+    "onKeyDown": {
+      "Enter": "sendMessage",
+      "Shift+Enter": "newLine",
+      "Ctrl+A": "selectAll"
+    }
+  },
+
+  "accessibility": {
+    "role": "main",
+    "ariaLabel": "Chat interface",
+    "messageRole": "log",
+    "messageAnnouncement": "polite"
+  },
+
+  "theme": {
+    "mode": "dark",
+    "primaryColor": "#0ea5e9",
+    "userMessageBackground": "#0ea5e9",
+    "assistantMessageBackground": "#1e293b"
+  },
+
+  "notes": [
+    "Messages persist in local SQLite database",
+    "Auto-reconnect on network changes",
+    "Supports markdown formatting in messages",
+    "Code blocks with syntax highlighting",
+    "File attachments (admin only) support documents",
+    "Typing indicators show when remote user is composing",
+    "Messages scroll to bottom on new message",
+    "Clear history removes local cache only",
+    "Export saves conversation to file",
+    "Last 50 messages shown on load"
+  ]
+}

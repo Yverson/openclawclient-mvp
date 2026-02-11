@@ -1,0 +1,214 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Root variables */
+:root {
+  --background: 15 23 42;
+  --foreground: 241 245 249;
+  --primary: 14 165 233;
+  --primary-700: 3 105 161;
+  --slate-700: 51 65 85;
+  --slate-800: 30 41 59;
+}
+
+* {
+  @apply border-slate-700;
+}
+
+html,
+body {
+  @apply h-full w-full bg-slate-900 text-slate-100;
+  margin: 0;
+  padding: 0;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+#root {
+  @apply h-full w-full;
+}
+
+/* Remove default scrollbar styling */
+::-webkit-scrollbar {
+  @apply w-2 h-2;
+}
+
+::-webkit-scrollbar-track {
+  @apply bg-slate-800;
+}
+
+::-webkit-scrollbar-thumb {
+  @apply bg-slate-700 rounded;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  @apply bg-slate-600;
+}
+
+/* Input focus styles */
+input:focus,
+textarea:focus,
+select:focus {
+  @apply outline-none ring-2 ring-primary-500 ring-offset-0;
+}
+
+/* Button reset */
+button {
+  @apply cursor-pointer transition-all duration-200;
+}
+
+button:disabled {
+  @apply opacity-50 cursor-not-allowed;
+}
+
+/* Text selection */
+::selection {
+  @apply bg-primary-500 text-white;
+}
+
+/* Code blocks */
+code {
+  @apply bg-slate-800 px-2 py-1 rounded text-xs font-mono text-primary-400;
+}
+
+pre {
+  @apply bg-slate-800 p-4 rounded overflow-auto;
+}
+
+/* Links */
+a {
+  @apply text-primary-500 hover:text-primary-400 transition-colors;
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateY(10px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Loading spinner */
+.spinner {
+  @apply inline-block animate-spin;
+}
+
+/* Focus visible for accessibility */
+:focus-visible {
+  @apply outline-2 outline-offset-2 outline-primary-500;
+}
+
+/* Utility classes */
+.truncate-lines-2 {
+  @apply line-clamp-2;
+}
+
+.truncate-lines-3 {
+  @apply line-clamp-3;
+}
+
+.text-center-flex {
+  @apply flex items-center justify-center;
+}
+
+/* Card styles */
+.card {
+  @apply bg-slate-800 rounded-lg border border-slate-700 shadow-lg;
+}
+
+.card-hover {
+  @apply card hover:bg-slate-700 hover:border-slate-600 transition-all;
+}
+
+/* Button styles */
+.btn {
+  @apply px-4 py-2 rounded-lg font-medium transition-all duration-200;
+}
+
+.btn-primary {
+  @apply btn bg-primary-600 hover:bg-primary-700 text-white;
+}
+
+.btn-secondary {
+  @apply btn bg-slate-700 hover:bg-slate-600 text-white;
+}
+
+.btn-ghost {
+  @apply btn text-slate-300 hover:bg-slate-700;
+}
+
+.btn-sm {
+  @apply px-3 py-1 text-sm;
+}
+
+/* Input styles */
+.input {
+  @apply w-full px-3 py-2 rounded-lg bg-slate-700 border border-slate-600 text-white placeholder-slate-400 transition-all;
+}
+
+.input:focus {
+  @apply bg-slate-800 border-primary-500;
+}
+
+/* Badge styles */
+.badge {
+  @apply inline-flex items-center px-2 py-1 rounded-full text-xs font-medium;
+}
+
+.badge-success {
+  @apply bg-emerald-900 text-emerald-200;
+}
+
+.badge-warning {
+  @apply bg-amber-900 text-amber-200;
+}
+
+.badge-danger {
+  @apply bg-red-900 text-red-200;
+}
+
+.badge-info {
+  @apply bg-blue-900 text-blue-200;
+}
+
+/* Toast notification */
+.toast {
+  @apply fixed bottom-4 right-4 bg-slate-800 border border-slate-700 rounded-lg shadow-xl p-4 max-w-sm;
+}
+
+.toast-success {
+  @apply bg-emerald-900 border-emerald-700;
+}
+
+.toast-error {
+  @apply bg-red-900 border-red-700;
+}
+
+/* Loading skeleton */
+.skeleton {
+  @apply bg-slate-700 animate-pulse rounded;
+}

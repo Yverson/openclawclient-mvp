@@ -1,0 +1,821 @@
+{
+  "screen": "SettingsScreen",
+  "version": "1.0",
+  "title": "Settings - Preferences & Account Management",
+  "description": "User preferences, token management, and application settings",
+  "targetResolutions": ["1920x1080", "1366x768", "1024x768"],
+  "darkMode": true,
+
+  "layout": {
+    "type": "grid",
+    "columns": "240px 1fr",
+    "gap": "32px",
+    "background": "#0f172a",
+    "padding": "24px"
+  },
+
+  "components": [
+    {
+      "id": "page-title",
+      "type": "Text",
+      "text": "Settings",
+      "fontSize": "28px",
+      "fontWeight": "bold",
+      "color": "#f1f5f9",
+      "gridColumn": "1 / -1",
+      "marginBottom": "24px"
+    },
+
+    {
+      "id": "sidebar-menu",
+      "type": "Group",
+      "gridColumn": 1,
+      "display": "flex",
+      "flexDirection": "column",
+      "gap": "8px",
+      "position": "sticky",
+      "top": "24px",
+      "maxHeight": "calc(100vh - 48px)",
+      "children": [
+        {
+          "id": "menu-account",
+          "type": "Button",
+          "text": "Account",
+          "variant": "ghost",
+          "size": "md",
+          "justifyContent": "flex-start",
+          "padding": "12px 16px",
+          "width": "100%",
+          "background": "#0ea5e9",
+          "color": "#fff",
+          "onClick": "selectTab('account')"
+        },
+        {
+          "id": "menu-security",
+          "type": "Button",
+          "text": "Security",
+          "variant": "ghost",
+          "size": "md",
+          "justifyContent": "flex-start",
+          "padding": "12px 16px",
+          "width": "100%",
+          "background": "transparent",
+          "color": "#cbd5e1",
+          "hover": { "background": "#1e293b" },
+          "onClick": "selectTab('security')"
+        },
+        {
+          "id": "menu-appearance",
+          "type": "Button",
+          "text": "Appearance",
+          "variant": "ghost",
+          "size": "md",
+          "justifyContent": "flex-start",
+          "padding": "12px 16px",
+          "width": "100%",
+          "background": "transparent",
+          "color": "#cbd5e1",
+          "hover": { "background": "#1e293b" },
+          "onClick": "selectTab('appearance')"
+        },
+        {
+          "id": "menu-notifications",
+          "type": "Button",
+          "text": "Notifications",
+          "variant": "ghost",
+          "size": "md",
+          "justifyContent": "flex-start",
+          "padding": "12px 16px",
+          "width": "100%",
+          "background": "transparent",
+          "color": "#cbd5e1",
+          "hover": { "background": "#1e293b" },
+          "onClick": "selectTab('notifications')"
+        },
+        {
+          "id": "menu-about",
+          "type": "Button",
+          "text": "About",
+          "variant": "ghost",
+          "size": "md",
+          "justifyContent": "flex-start",
+          "padding": "12px 16px",
+          "width": "100%",
+          "background": "transparent",
+          "color": "#cbd5e1",
+          "hover": { "background": "#1e293b" },
+          "onClick": "selectTab('about')"
+        }
+      ]
+    },
+
+    {
+      "id": "content-area",
+      "type": "Group",
+      "gridColumn": 2,
+      "children": [
+        {
+          "id": "tab-account",
+          "type": "Group",
+          "display": true,
+          "children": [
+            {
+              "id": "account-title",
+              "type": "Text",
+              "text": "Account Settings",
+              "fontSize": "20px",
+              "fontWeight": "600",
+              "color": "#f1f5f9",
+              "marginBottom": "24px"
+            },
+            {
+              "id": "account-card-user",
+              "type": "Card",
+              "padding": "24px",
+              "border": "1px solid #334155",
+              "background": "#1e293b",
+              "marginBottom": "24px",
+              "children": [
+                {
+                  "id": "user-section-title",
+                  "type": "Text",
+                  "text": "User Profile",
+                  "fontSize": "14px",
+                  "fontWeight": "600",
+                  "color": "#cbd5e1",
+                  "marginBottom": "16px"
+                },
+                {
+                  "id": "user-info-group",
+                  "type": "Group",
+                  "display": "flex",
+                  "gap": "16px",
+                  "alignItems": "flex-start",
+                  "marginBottom": "20px",
+                  "children": [
+                    {
+                      "id": "user-avatar",
+                      "type": "Avatar",
+                      "initials": "MJ",
+                      "size": "64px",
+                      "background": "#0ea5e9",
+                      "color": "#fff"
+                    },
+                    {
+                      "id": "user-details",
+                      "type": "Group",
+                      "children": [
+                        {
+                          "id": "user-name",
+                          "type": "Text",
+                          "text": "Mathieu",
+                          "fontSize": "16px",
+                          "fontWeight": "600",
+                          "color": "#f1f5f9"
+                        },
+                        {
+                          "id": "user-email",
+                          "type": "Text",
+                          "text": "mathieu@openclaw.io",
+                          "fontSize": "14px",
+                          "color": "#cbd5e1",
+                          "marginTop": "4px"
+                        },
+                        {
+                          "id": "user-role",
+                          "type": "Badge",
+                          "text": "Admin",
+                          "variant": "info",
+                          "marginTop": "8px"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "id": "divider-1",
+                  "type": "Divider",
+                  "marginTop": "16px",
+                  "marginBottom": "16px"
+                },
+                {
+                  "id": "api-url-group",
+                  "type": "Group",
+                  "marginBottom": "16px",
+                  "children": [
+                    {
+                      "id": "api-url-label",
+                      "type": "Label",
+                      "text": "OpenClaw API URL",
+                      "fontSize": "13px",
+                      "fontWeight": "600",
+                      "color": "#cbd5e1",
+                      "marginBottom": "8px"
+                    },
+                    {
+                      "id": "api-url-display",
+                      "type": "Group",
+                      "display": "flex",
+                      "gap": "8px",
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "id": "api-url-value",
+                          "type": "Text",
+                          "text": "http://localhost:18789",
+                          "fontSize": "13px",
+                          "color": "#f1f5f9",
+                          "fontFamily": "Menlo, monospace"
+                        },
+                        {
+                          "id": "api-url-copy",
+                          "type": "Button",
+                          "variant": "ghost",
+                          "size": "sm",
+                          "icon": "copy",
+                          "onClick": "copyToClipboard('apiUrl')"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "id": "logout-button",
+                  "type": "Button",
+                  "text": "Logout",
+                  "variant": "danger",
+                  "width": "100%",
+                  "marginTop": "16px",
+                  "onClick": "logout"
+                }
+              ]
+            },
+            {
+              "id": "account-card-token",
+              "type": "Card",
+              "padding": "24px",
+              "border": "1px solid #334155",
+              "background": "#1e293b",
+              "children": [
+                {
+                  "id": "token-section-title",
+                  "type": "Text",
+                  "text": "API Token Management",
+                  "fontSize": "14px",
+                  "fontWeight": "600",
+                  "color": "#cbd5e1",
+                  "marginBottom": "16px"
+                },
+                {
+                  "id": "token-info",
+                  "type": "Alert",
+                  "type": "info",
+                  "icon": "info",
+                  "title": "Token Information",
+                  "message": "Your API token is stored locally and encrypted. It is never sent to external servers.",
+                  "marginBottom": "16px"
+                },
+                {
+                  "id": "token-display-group",
+                  "type": "Group",
+                  "display": "flex",
+                  "gap": "8px",
+                  "marginBottom": "16px",
+                  "children": [
+                    {
+                      "id": "token-display",
+                      "type": "Input",
+                      "type": "password",
+                      "value": "••••••••••••••••••••",
+                      "width": "100%",
+                      "padding": "10px 12px",
+                      "borderRadius": "4px",
+                      "border": "1px solid #334155",
+                      "background": "#0f172a",
+                      "color": "#f1f5f9",
+                      "readOnly": true,
+                      "disabled": true
+                    },
+                    {
+                      "id": "token-show",
+                      "type": "Button",
+                      "variant": "secondary",
+                      "size": "md",
+                      "icon": "eye",
+                      "onClick": "toggleTokenVisibility"
+                    }
+                  ]
+                },
+                {
+                  "id": "token-expires",
+                  "type": "Text",
+                  "text": "Expires: 2026-05-11 (90 days from now)",
+                  "fontSize": "12px",
+                  "color": "#cbd5e1",
+                  "marginBottom": "16px"
+                },
+                {
+                  "id": "token-action-buttons",
+                  "type": "Group",
+                  "display": "flex",
+                  "gap": "8px",
+                  "children": [
+                    {
+                      "id": "token-refresh",
+                      "type": "Button",
+                      "text": "Refresh Token",
+                      "variant": "secondary",
+                      "width": "50%",
+                      "onClick": "refreshToken"
+                    },
+                    {
+                      "id": "token-revoke",
+                      "type": "Button",
+                      "text": "Revoke Token",
+                      "variant": "danger",
+                      "width": "50%",
+                      "onClick": "revokeToken"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+
+        {
+          "id": "tab-security",
+          "type": "Group",
+          "display": false,
+          "children": [
+            {
+              "id": "security-title",
+              "type": "Text",
+              "text": "Security Settings",
+              "fontSize": "20px",
+              "fontWeight": "600",
+              "color": "#f1f5f9",
+              "marginBottom": "24px"
+            },
+            {
+              "id": "security-card-sessions",
+              "type": "Card",
+              "padding": "24px",
+              "border": "1px solid #334155",
+              "background": "#1e293b",
+              "marginBottom": "24px",
+              "children": [
+                {
+                  "id": "sessions-title",
+                  "type": "Text",
+                  "text": "Active Sessions",
+                  "fontSize": "14px",
+                  "fontWeight": "600",
+                  "color": "#cbd5e1",
+                  "marginBottom": "16px"
+                },
+                {
+                  "id": "session-item",
+                  "type": "Group",
+                  "padding": "12px",
+                  "background": "#0f172a",
+                  "borderRadius": "4px",
+                  "border": "1px solid #334155",
+                  "display": "flex",
+                  "justifyContent": "space-between",
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "id": "session-info",
+                      "type": "Group",
+                      "children": [
+                        {
+                          "id": "session-device",
+                          "type": "Text",
+                          "text": "MacBook Pro (Current)",
+                          "fontSize": "13px",
+                          "fontWeight": "600",
+                          "color": "#f1f5f9"
+                        },
+                        {
+                          "id": "session-date",
+                          "type": "Text",
+                          "text": "Last active: 2 minutes ago",
+                          "fontSize": "12px",
+                          "color": "#cbd5e1",
+                          "marginTop": "4px"
+                        }
+                      ]
+                    },
+                    {
+                      "id": "session-logout",
+                      "type": "Button",
+                      "text": "Sign Out",
+                      "variant": "secondary",
+                      "size": "sm",
+                      "onClick": "signOutSession"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "id": "security-card-two-factor",
+              "type": "Card",
+              "padding": "24px",
+              "border": "1px solid #334155",
+              "background": "#1e293b",
+              "children": [
+                {
+                  "id": "two-factor-title",
+                  "type": "Text",
+                  "text": "Two-Factor Authentication",
+                  "fontSize": "14px",
+                  "fontWeight": "600",
+                  "color": "#cbd5e1",
+                  "marginBottom": "12px"
+                },
+                {
+                  "id": "two-factor-status",
+                  "type": "Group",
+                  "display": "flex",
+                  "justifyContent": "space-between",
+                  "alignItems": "center",
+                  "marginBottom": "16px",
+                  "children": [
+                    {
+                      "id": "two-factor-text",
+                      "type": "Text",
+                      "text": "Status: Not enabled",
+                      "fontSize": "13px",
+                      "color": "#cbd5e1"
+                    },
+                    {
+                      "id": "two-factor-toggle",
+                      "type": "Toggle",
+                      "checked": false,
+                      "onClick": "toggle2FA"
+                    }
+                  ]
+                },
+                {
+                  "id": "two-factor-info",
+                  "type": "Text",
+                  "text": "Enable two-factor authentication to add an extra layer of security to your account.",
+                  "fontSize": "12px",
+                  "color": "#64748b"
+                }
+              ]
+            }
+          ]
+        },
+
+        {
+          "id": "tab-appearance",
+          "type": "Group",
+          "display": false,
+          "children": [
+            {
+              "id": "appearance-title",
+              "type": "Text",
+              "text": "Appearance",
+              "fontSize": "20px",
+              "fontWeight": "600",
+              "color": "#f1f5f9",
+              "marginBottom": "24px"
+            },
+            {
+              "id": "appearance-card-theme",
+              "type": "Card",
+              "padding": "24px",
+              "border": "1px solid #334155",
+              "background": "#1e293b",
+              "marginBottom": "24px",
+              "children": [
+                {
+                  "id": "theme-title",
+                  "type": "Text",
+                  "text": "Theme",
+                  "fontSize": "14px",
+                  "fontWeight": "600",
+                  "color": "#cbd5e1",
+                  "marginBottom": "16px"
+                },
+                {
+                  "id": "theme-group",
+                  "type": "Group",
+                  "display": "flex",
+                  "gap": "12px",
+                  "children": [
+                    {
+                      "id": "theme-light",
+                      "type": "Button",
+                      "text": "Light",
+                      "variant": "secondary",
+                      "flex": 1,
+                      "onClick": "setTheme('light')"
+                    },
+                    {
+                      "id": "theme-dark",
+                      "type": "Button",
+                      "text": "Dark",
+                      "variant": "primary",
+                      "flex": 1,
+                      "onClick": "setTheme('dark')"
+                    },
+                    {
+                      "id": "theme-auto",
+                      "type": "Button",
+                      "text": "Auto",
+                      "variant": "secondary",
+                      "flex": 1,
+                      "onClick": "setTheme('auto')"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "id": "appearance-card-font",
+              "type": "Card",
+              "padding": "24px",
+              "border": "1px solid #334155",
+              "background": "#1e293b",
+              "children": [
+                {
+                  "id": "font-title",
+                  "type": "Text",
+                  "text": "Font Size",
+                  "fontSize": "14px",
+                  "fontWeight": "600",
+                  "color": "#cbd5e1",
+                  "marginBottom": "16px"
+                },
+                {
+                  "id": "font-slider",
+                  "type": "Slider",
+                  "min": 12,
+                  "max": 18,
+                  "step": 1,
+                  "defaultValue": 14,
+                  "onChange": "setFontSize"
+                },
+                {
+                  "id": "font-preview",
+                  "type": "Text",
+                  "text": "Preview text with current font size",
+                  "fontSize": "14px",
+                  "color": "#cbd5e1",
+                  "marginTop": "12px",
+                  "padding": "12px",
+                  "background": "#0f172a",
+                  "borderRadius": "4px"
+                }
+              ]
+            }
+          ]
+        },
+
+        {
+          "id": "tab-notifications",
+          "type": "Group",
+          "display": false,
+          "children": [
+            {
+              "id": "notifications-title",
+              "type": "Text",
+              "text": "Notification Preferences",
+              "fontSize": "20px",
+              "fontWeight": "600",
+              "color": "#f1f5f9",
+              "marginBottom": "24px"
+            },
+            {
+              "id": "notif-card-system",
+              "type": "Card",
+              "padding": "24px",
+              "border": "1px solid #334155",
+              "background": "#1e293b",
+              "marginBottom": "24px",
+              "children": [
+                {
+                  "id": "notif-item-critical",
+                  "type": "Group",
+                  "display": "flex",
+                  "justifyContent": "space-between",
+                  "alignItems": "center",
+                  "marginBottom": "16px",
+                  "paddingBottom": "16px",
+                  "borderBottom": "1px solid #334155",
+                  "children": [
+                    {
+                      "id": "notif-label-critical",
+                      "type": "Text",
+                      "text": "Critical Alerts (Server Down, Deployment Failed)",
+                      "fontSize": "13px",
+                      "color": "#cbd5e1"
+                    },
+                    {
+                      "id": "notif-toggle-critical",
+                      "type": "Toggle",
+                      "checked": true,
+                      "onClick": "toggleNotification('critical')"
+                    }
+                  ]
+                },
+                {
+                  "id": "notif-item-warning",
+                  "type": "Group",
+                  "display": "flex",
+                  "justifyContent": "space-between",
+                  "alignItems": "center",
+                  "marginBottom": "16px",
+                  "paddingBottom": "16px",
+                  "borderBottom": "1px solid #334155",
+                  "children": [
+                    {
+                      "id": "notif-label-warning",
+                      "type": "Text",
+                      "text": "Warnings (High CPU, Disk Full)",
+                      "fontSize": "13px",
+                      "color": "#cbd5e1"
+                    },
+                    {
+                      "id": "notif-toggle-warning",
+                      "type": "Toggle",
+                      "checked": true,
+                      "onClick": "toggleNotification('warning')"
+                    }
+                  ]
+                },
+                {
+                  "id": "notif-item-info",
+                  "type": "Group",
+                  "display": "flex",
+                  "justifyContent": "space-between",
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "id": "notif-label-info",
+                      "type": "Text",
+                      "text": "Informational (Deployment Success, Task Complete)",
+                      "fontSize": "13px",
+                      "color": "#cbd5e1"
+                    },
+                    {
+                      "id": "notif-toggle-info",
+                      "type": "Toggle",
+                      "checked": false,
+                      "onClick": "toggleNotification('info')"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+
+        {
+          "id": "tab-about",
+          "type": "Group",
+          "display": false,
+          "children": [
+            {
+              "id": "about-title",
+              "type": "Text",
+              "text": "About OpenClaw Client",
+              "fontSize": "20px",
+              "fontWeight": "600",
+              "color": "#f1f5f9",
+              "marginBottom": "24px"
+            },
+            {
+              "id": "about-card",
+              "type": "Card",
+              "padding": "32px",
+              "border": "1px solid #334155",
+              "background": "#1e293b",
+              "textAlign": "center",
+              "children": [
+                {
+                  "id": "about-icon",
+                  "type": "Icon",
+                  "name": "cpu",
+                  "size": "64px",
+                  "color": "#0ea5e9",
+                  "marginBottom": "16px"
+                },
+                {
+                  "id": "about-app-name",
+                  "type": "Text",
+                  "text": "OpenClaw Client",
+                  "fontSize": "24px",
+                  "fontWeight": "bold",
+                  "color": "#f1f5f9",
+                  "marginBottom": "8px"
+                },
+                {
+                  "id": "about-version",
+                  "type": "Text",
+                  "text": "Version 0.1.0-alpha",
+                  "fontSize": "14px",
+                  "color": "#cbd5e1",
+                  "marginBottom": "24px"
+                },
+                {
+                  "id": "about-description",
+                  "type": "Text",
+                  "text": "Desktop application for managing local tasks and remote OpenClaw deployments. Built with React, TailwindCSS, and Electron.",
+                  "fontSize": "13px",
+                  "color": "#cbd5e1",
+                  "maxWidth": "400px",
+                  "marginBottom": "32px"
+                },
+                {
+                  "id": "about-divider",
+                  "type": "Divider",
+                  "marginTop": "24px",
+                  "marginBottom": "24px"
+                },
+                {
+                  "id": "about-tech",
+                  "type": "Group",
+                  "children": [
+                    {
+                      "id": "about-tech-label",
+                      "type": "Text",
+                      "text": "Technology Stack",
+                      "fontSize": "13px",
+                      "fontWeight": "600",
+                      "color": "#cbd5e1",
+                      "marginBottom": "12px"
+                    },
+                    {
+                      "id": "about-tech-list",
+                      "type": "Text",
+                      "text": "Electron • React 18 • TailwindCSS • Zustand • Shadcn/ui • Matrix Protocol",
+                      "fontSize": "12px",
+                      "color": "#64748b",
+                      "marginBottom": "24px"
+                    }
+                  ]
+                },
+                {
+                  "id": "about-buttons",
+                  "type": "Group",
+                  "display": "flex",
+                  "gap": "12px",
+                  "justifyContent": "center",
+                  "children": [
+                    {
+                      "id": "about-github",
+                      "type": "Button",
+                      "text": "GitHub",
+                      "variant": "secondary",
+                      "onClick": "openLink('https://github.com/openclaw/client')"
+                    },
+                    {
+                      "id": "about-docs",
+                      "type": "Button",
+                      "text": "Documentation",
+                      "variant": "secondary",
+                      "onClick": "openLink('https://docs.openclaw.io')"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+
+  "persistence": {
+    "autoSave": true,
+    "saveLocation": "localStorage + SQLite",
+    "settings": [
+      "theme",
+      "fontSize",
+      "notifications",
+      "autoRefresh"
+    ]
+  },
+
+  "theme": {
+    "mode": "dark",
+    "primaryColor": "#0ea5e9"
+  },
+
+  "notes": [
+    "All settings saved locally and encrypted",
+    "Token visible only after authentication",
+    "Logout clears all session data",
+    "Settings synced across app screens",
+    "Theme preference persists on reload",
+    "Two-factor authentication (future feature)",
+    "Session management shows active devices",
+    "Notification preferences control system alerts",
+    "Font size applies globally to all screens"
+  ]
+}

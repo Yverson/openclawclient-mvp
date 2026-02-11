@@ -1,0 +1,353 @@
+{
+  "project": {
+    "id": "openclawclient-mvp",
+    "name": "OpenClaw Client MVP",
+    "description": "Native desktop application connecting local PC tasks with remote OpenClaw deployments. Supports local mail filtering, file search, and real-time server monitoring via chat.",
+    "version": "0.1.0-alpha",
+    "status": "in_development",
+    "created_at": "2026-02-11T16:53:00Z"
+  },
+
+  "structure": {
+    "components": {
+      "backend": {
+        "required": false,
+        "reason": "Uses existing OpenClaw API"
+      },
+      "frontends": [
+        {
+          "name": "electron-app",
+          "type": "electron",
+          "platform": "desktop",
+          "technology": ["react", "typescript", "tailwind"],
+          "purpose": "Main application UI for Windows, macOS, Linux"
+        }
+      ],
+      "mobiles": [],
+      "local_services": [
+        {
+          "name": "mail-service",
+          "purpose": "Parse and filter emails locally",
+          "technology": ["nodemailer", "imap"]
+        },
+        {
+          "name": "file-search-service",
+          "purpose": "Search files on user disk",
+          "technology": ["glob", "fs"]
+        }
+      ]
+    }
+  },
+
+  "architecture": {
+    "frontend": {
+      "framework": "React 18+",
+      "styling": "TailwindCSS + Shadcn/ui",
+      "state_management": "Zustand",
+      "api_client": "Axios + React Query",
+      "form_validation": "Zod",
+      "icons": "Lucide React"
+    },
+    "desktop": {
+      "platform": "Tauri or Electron",
+      "main_process": "Rust (Tauri) or Node.js (Electron)",
+      "database": "SQLite (local)",
+      "ipc": "Tauri Command or Electron IPC"
+    },
+    "remote_integration": {
+      "auth": "OpenClaw JWT tokens",
+      "api": "REST + WebSocket (Matrix)",
+      "endpoints": [
+        "POST /auth/token",
+        "GET /api/status",
+        "WebSocket /ws/matrix"
+      ]
+    }
+  },
+
+  "features": {
+    "user_tiers": {
+      "admin": [
+        "Server monitoring (real-time dashboard)",
+        "Container management",
+        "Deployment logs",
+        "System alerts",
+        "All user features"
+      ],
+      "user": [
+        "Mail filtering (local)",
+        "File search (local)",
+        "Server status (read-only)",
+        "Chat with Matrix",
+        "Notifications"
+      ]
+    }
+  },
+
+  "technology_stack": {
+    "monorepo": "Turborepo or Nx",
+    "build_tool": "Vite",
+    "testing": "Jest + React Testing Library + Playwright",
+    "ci_cd": "GitHub Actions",
+    "containerization": "Docker",
+    "deployment": "Dokploy",
+    "repository": "GitHub"
+  },
+
+  "pipeline_phases": {
+    "phase_0": {
+      "name": "Initialization",
+      "status": "✅ COMPLETE",
+      "outputs": [
+        "directory-structure",
+        "project-manifest.json",
+        "analysis"
+      ],
+      "timestamp": "2026-02-11T16:47:00Z"
+    },
+    "phase_1": {
+      "name": "Documentation (PRDs)",
+      "status": "✅ COMPLETE",
+      "agents": [
+        {
+          "agent": "prd-master",
+          "task": "Generate product requirements and architecture",
+          "output": "docs/PRD.md"
+        },
+        {
+          "agent": "prd-frontend",
+          "task": "Generate desktop frontend specifications",
+          "output": "docs/prd-frontend-desktop.md"
+        }
+      ],
+      "validation": "Coherence check passed",
+      "timestamp": "2026-02-11T16:47:30Z"
+    },
+    "phase_2": {
+      "name": "Design (Stitch)",
+      "status": "⏱️ PENDING",
+      "agents": [
+        {
+          "agent": "stitch",
+          "task": "Generate UI screens for desktop app",
+          "input": "docs/PRD.md",
+          "output": "docs/screens/"
+        }
+      ],
+      "screens_required": [
+        "LoginScreen",
+        "DashboardScreen",
+        "MailFilterScreen",
+        "FileSearchScreen",
+        "ChatScreen",
+        "SettingsScreen"
+      ],
+      "scheduled": true
+    },
+    "phase_3a": {
+      "name": "Backend Code Generation",
+      "status": "⏭️ NOT APPLICABLE",
+      "reason": "Uses existing OpenClaw API",
+      "note": "Skip directly to Phase 3b"
+    },
+    "phase_3b": {
+      "name": "Frontend Code Generation",
+      "status": "⏱️ PENDING",
+      "agents": [
+        {
+          "agent": "pixel",
+          "tool": "v0",
+          "task": "Generate desktop app (Electron/Tauri + React)",
+          "input": [
+            "docs/prd-frontend-desktop.md",
+            "docs/screens/",
+            "openapi.json"
+          ],
+          "output": "apps/desktop/"
+        }
+      ],
+      "dependencies": [
+        "phase_2 complete",
+        "openapi.json available"
+      ],
+      "scheduled": true
+    },
+    "phase_3c": {
+      "name": "Integration Tests",
+      "status": "⏱️ PENDING",
+      "validations": [
+        "Desktop app connects to OpenClaw API",
+        "Chat WebSocket working",
+        "Local tasks (mail, files) functional",
+        "Build succeeds on all platforms"
+      ],
+      "scheduled": true
+    },
+    "phase_4": {
+      "name": "Git Repository & Docker",
+      "status": "⏱️ PENDING",
+      "actions": [
+        "Initialize git repository",
+        "Create docker-compose.yml",
+        "Configure CI/CD workflows (.github/workflows/)",
+        "Push to GitHub",
+        "Verify repository"
+      ],
+      "scheduled": true
+    },
+    "phase_5": {
+      "name": "Deployment",
+      "status": "⏱️ PENDING",
+      "agent": "vault",
+      "actions": [
+        "Create Dokploy project",
+        "Configure desktop app service",
+        "Set environment variables",
+        "Trigger deployment",
+        "Health checks"
+      ],
+      "deployment_config": {
+        "service": "openclawclient-mvp",
+        "container_image": "openclawclient:latest",
+        "port": "3000",
+        "environment": [
+          "VITE_OPENCLAWS_URL",
+          "VITE_API_TIMEOUT",
+          "TAURI_PRIVATE_KEY"
+        ]
+      },
+      "scheduled": true
+    }
+  },
+
+  "dependencies": {
+    "external_apis": [
+      "OpenClaw Gateway (http://localhost:18789)",
+      "OpenClaw Auth (/auth/token)",
+      "OpenClaw Status (/api/status)",
+      "OpenClaw Matrix Chat (ws://localhost:18789/ws/matrix)"
+    ],
+    "services": [
+      "GitHub (repository hosting)",
+      "Dokploy (deployment platform)"
+    ]
+  },
+
+  "deliverables": {
+    "documentation": [
+      "docs/PRD.md",
+      "docs/ARCHITECTURE.md",
+      "docs/PROJECT_STRUCTURE.md",
+      "docs/DEVELOPMENT_ROADMAP.md",
+      "README.md",
+      "CONTRIBUTING.md"
+    ],
+    "code": [
+      "apps/desktop/src/ (React + Electron/Tauri)",
+      "packages/types/ (Shared TypeScript types)",
+      "tests/ (Unit + Integration + E2E)",
+      "Dockerfile",
+      "docker-compose.yml"
+    ],
+    "ci_cd": [
+      ".github/workflows/build.yml",
+      ".github/workflows/test.yml",
+      ".github/workflows/deploy.yml"
+    ],
+    "deployment": [
+      "GitHub repository (ready to clone)",
+      "Dokploy project configuration",
+      "Running services on Dokploy"
+    ]
+  },
+
+  "timeline": {
+    "phase_0": "2026-02-11 16:47 - 16:53 (6 min)",
+    "phase_1": "2026-02-11 16:47 - 16:47 (instant - PRDs generated)",
+    "phase_2": "2026-02-11 (estimated 1h)",
+    "phase_3b": "2026-02-11 to 2026-02-12 (estimated 2-3h)",
+    "phase_3c": "2026-02-12 (estimated 30min)",
+    "phase_4": "2026-02-12 (estimated 15min)",
+    "phase_5": "2026-02-12 (estimated 30min)",
+    "total_estimated": "4 weeks (with full team) or 8 weeks (1 developer)"
+  },
+
+  "team": {
+    "orchestrator": {
+      "role": "Project coordinator",
+      "agent": "orchestrator",
+      "responsibilities": [
+        "Manage phases",
+        "Delegate to sub-agents",
+        "Validate outputs",
+        "Handle errors/retries"
+      ]
+    },
+    "design": {
+      "role": "UI/UX design",
+      "agent": "stitch",
+      "task": "Generate screens"
+    },
+    "frontend": {
+      "role": "Desktop frontend dev",
+      "agent": "pixel",
+      "task": "Generate React + Electron/Tauri app"
+    },
+    "devops": {
+      "role": "Infrastructure & deployment",
+      "agent": "vault",
+      "task": "Setup Dokploy deployment"
+    }
+  },
+
+  "success_criteria": {
+    "code_quality": {
+      "lint_score": ">=95/100",
+      "test_coverage": ">=80%",
+      "no_vulnerabilities": true
+    },
+    "functionality": {
+      "all_screens_implemented": true,
+      "api_integration_working": true,
+      "local_tasks_functional": true,
+      "chat_with_claude_working": true
+    },
+    "deployment": {
+      "github_repo_created": true,
+      "ci_cd_pipeline_working": true,
+      "dokploy_services_running": true,
+      "health_checks_passing": true
+    }
+  },
+
+  "risk_register": [
+    {
+      "risk": "Tauri/Electron decision delay",
+      "impact": "medium",
+      "mitigation": "Decide by end of Phase 0"
+    },
+    {
+      "risk": "OpenClaw API contract changes",
+      "impact": "medium",
+      "mitigation": "Validate endpoints before Phase 3b"
+    },
+    {
+      "risk": "Mail client parsing complexity",
+      "impact": "low",
+      "mitigation": "Start with simple Outlook parsing, iterate"
+    },
+    {
+      "risk": "Cross-platform testing (Mac/Windows/Linux)",
+      "impact": "medium",
+      "mitigation": "Use CI/CD to build all platforms automatically"
+    }
+  ],
+
+  "metadata": {
+    "owner": "Mathieu",
+    "created_by": "Orchestrator Agent",
+    "last_updated": "2026-02-11T16:53:00Z",
+    "version": "1.0",
+    "status": "active"
+  }
+}

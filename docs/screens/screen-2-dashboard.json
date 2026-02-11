@@ -1,0 +1,622 @@
+{
+  "screen": "DashboardScreen",
+  "version": "1.0",
+  "title": "Dashboard - Server Status & Monitoring",
+  "description": "Real-time server status, container metrics, and deployment history. Updates every 30 seconds.",
+  "targetResolutions": ["1920x1080", "1366x768", "1024x768"],
+  "darkMode": true,
+
+  "layout": {
+    "type": "grid",
+    "columns": 1,
+    "background": "#0f172a",
+    "padding": "24px"
+  },
+
+  "components": [
+    {
+      "id": "header-section",
+      "type": "Group",
+      "marginBottom": "24px",
+      "display": "flex",
+      "justifyContent": "space-between",
+      "alignItems": "center",
+      "children": [
+        {
+          "id": "page-title",
+          "type": "Text",
+          "text": "Dashboard",
+          "fontSize": "28px",
+          "fontWeight": "bold",
+          "color": "#f1f5f9"
+        },
+        {
+          "id": "header-controls",
+          "type": "Group",
+          "display": "flex",
+          "gap": "12px",
+          "children": [
+            {
+              "id": "button-refresh",
+              "type": "Button",
+              "variant": "secondary",
+              "size": "sm",
+              "icon": "refresh-cw",
+              "text": "Refresh",
+              "onClick": "refreshDashboard"
+            },
+            {
+              "id": "notification-bell",
+              "type": "Group",
+              "position": "relative",
+              "cursor": "pointer",
+              "onClick": "openNotifications",
+              "children": [
+                {
+                  "id": "bell-icon",
+                  "type": "Icon",
+                  "name": "bell",
+                  "size": "20px",
+                  "color": "#cbd5e1",
+                  "hover": { "color": "#f1f5f9" }
+                },
+                {
+                  "id": "notification-badge",
+                  "type": "Badge",
+                  "text": "3",
+                  "variant": "error",
+                  "position": "absolute",
+                  "top": "-6px",
+                  "right": "-6px",
+                  "size": "18px",
+                  "display": "flex",
+                  "justifyContent": "center",
+                  "alignItems": "center"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+
+    {
+      "id": "status-summary",
+      "type": "Group",
+      "display": "grid",
+      "gridTemplateColumns": "repeat(auto-fit, minmax(240px, 1fr))",
+      "gap": "16px",
+      "marginBottom": "32px",
+      "children": [
+        {
+          "id": "summary-card-servers",
+          "type": "Card",
+          "padding": "20px",
+          "border": "1px solid #334155",
+          "background": "#1e293b",
+          "children": [
+            {
+              "id": "summary-icon-1",
+              "type": "Icon",
+              "name": "server",
+              "size": "24px",
+              "color": "#0ea5e9",
+              "marginBottom": "12px"
+            },
+            {
+              "id": "summary-label-1",
+              "type": "Text",
+              "text": "Active Servers",
+              "fontSize": "12px",
+              "color": "#cbd5e1",
+              "fontWeight": "500"
+            },
+            {
+              "id": "summary-value-1",
+              "type": "Text",
+              "text": "2 of 2",
+              "fontSize": "24px",
+              "fontWeight": "bold",
+              "color": "#10b981",
+              "marginTop": "8px"
+            }
+          ]
+        },
+        {
+          "id": "summary-card-containers",
+          "type": "Card",
+          "padding": "20px",
+          "border": "1px solid #334155",
+          "background": "#1e293b",
+          "children": [
+            {
+              "id": "summary-icon-2",
+              "type": "Icon",
+              "name": "box",
+              "size": "24px",
+              "color": "#3b82f6",
+              "marginBottom": "12px"
+            },
+            {
+              "id": "summary-label-2",
+              "type": "Text",
+              "text": "Containers",
+              "fontSize": "12px",
+              "color": "#cbd5e1",
+              "fontWeight": "500"
+            },
+            {
+              "id": "summary-value-2",
+              "type": "Text",
+              "text": "12 Running",
+              "fontSize": "24px",
+              "fontWeight": "bold",
+              "color": "#0ea5e9",
+              "marginTop": "8px"
+            }
+          ]
+        },
+        {
+          "id": "summary-card-alerts",
+          "type": "Card",
+          "padding": "20px",
+          "border": "1px solid #334155",
+          "background": "#1e293b",
+          "children": [
+            {
+              "id": "summary-icon-3",
+              "type": "Icon",
+              "name": "alert-triangle",
+              "size": "24px",
+              "color": "#f59e0b",
+              "marginBottom": "12px"
+            },
+            {
+              "id": "summary-label-3",
+              "type": "Text",
+              "text": "Alerts",
+              "fontSize": "12px",
+              "color": "#cbd5e1",
+              "fontWeight": "500"
+            },
+            {
+              "id": "summary-value-3",
+              "type": "Text",
+              "text": "1 Critical",
+              "fontSize": "24px",
+              "fontWeight": "bold",
+              "color": "#ef4444",
+              "marginTop": "8px"
+            }
+          ]
+        }
+      ]
+    },
+
+    {
+      "id": "servers-section",
+      "type": "Group",
+      "marginBottom": "32px",
+      "children": [
+        {
+          "id": "servers-title",
+          "type": "Group",
+          "display": "flex",
+          "justifyContent": "space-between",
+          "alignItems": "center",
+          "marginBottom": "16px",
+          "children": [
+            {
+              "id": "servers-heading",
+              "type": "Text",
+              "text": "Server Status",
+              "fontSize": "16px",
+              "fontWeight": "600",
+              "color": "#f1f5f9"
+            },
+            {
+              "id": "servers-last-update",
+              "type": "Text",
+              "text": "Last updated: 2s ago",
+              "fontSize": "12px",
+              "color": "#64748b"
+            }
+          ]
+        },
+        {
+          "id": "server-card-1",
+          "type": "Card",
+          "padding": "24px",
+          "border": "1px solid #334155",
+          "background": "#1e293b",
+          "marginBottom": "16px",
+          "children": [
+            {
+              "id": "server-header",
+              "type": "Group",
+              "display": "flex",
+              "justifyContent": "space-between",
+              "alignItems": "flex-start",
+              "marginBottom": "20px",
+              "children": [
+                {
+                  "id": "server-name",
+                  "type": "Group",
+                  "children": [
+                    {
+                      "id": "server-title",
+                      "type": "Text",
+                      "text": "PROD (161.97.178.66)",
+                      "fontSize": "16px",
+                      "fontWeight": "600",
+                      "color": "#f1f5f9",
+                      "marginBottom": "4px"
+                    },
+                    {
+                      "id": "server-uptime",
+                      "type": "Text",
+                      "text": "Uptime: 45 days 12h",
+                      "fontSize": "12px",
+                      "color": "#cbd5e1"
+                    }
+                  ]
+                },
+                {
+                  "id": "server-status-badge",
+                  "type": "Badge",
+                  "text": "UP",
+                  "variant": "success",
+                  "fontSize": "12px",
+                  "padding": "6px 12px"
+                }
+              ]
+            },
+            {
+              "id": "server-metrics",
+              "type": "Group",
+              "display": "grid",
+              "gridTemplateColumns": "1fr 1fr 1fr",
+              "gap": "24px",
+              "children": [
+                {
+                  "id": "metric-cpu",
+                  "type": "Group",
+                  "children": [
+                    {
+                      "id": "metric-label-cpu",
+                      "type": "Text",
+                      "text": "CPU Usage",
+                      "fontSize": "12px",
+                      "color": "#cbd5e1",
+                      "marginBottom": "8px"
+                    },
+                    {
+                      "id": "metric-gauge-cpu",
+                      "type": "RadialGauge",
+                      "value": 45,
+                      "max": 100,
+                      "size": "100px",
+                      "colors": [
+                        { "threshold": 50, "color": "#10b981" },
+                        { "threshold": 80, "color": "#f59e0b" },
+                        { "threshold": 100, "color": "#ef4444" }
+                      ]
+                    },
+                    {
+                      "id": "metric-value-cpu",
+                      "type": "Text",
+                      "text": "45%",
+                      "fontSize": "16px",
+                      "fontWeight": "600",
+                      "color": "#10b981",
+                      "marginTop": "8px",
+                      "textAlign": "center"
+                    }
+                  ]
+                },
+                {
+                  "id": "metric-ram",
+                  "type": "Group",
+                  "children": [
+                    {
+                      "id": "metric-label-ram",
+                      "type": "Text",
+                      "text": "RAM Usage",
+                      "fontSize": "12px",
+                      "color": "#cbd5e1",
+                      "marginBottom": "8px"
+                    },
+                    {
+                      "id": "metric-gauge-ram",
+                      "type": "RadialGauge",
+                      "value": 72,
+                      "max": 100,
+                      "size": "100px",
+                      "colors": [
+                        { "threshold": 50, "color": "#10b981" },
+                        { "threshold": 80, "color": "#f59e0b" },
+                        { "threshold": 100, "color": "#ef4444" }
+                      ]
+                    },
+                    {
+                      "id": "metric-value-ram",
+                      "type": "Text",
+                      "text": "9.8 GB / 11 GB",
+                      "fontSize": "12px",
+                      "fontWeight": "600",
+                      "color": "#f59e0b",
+                      "marginTop": "8px",
+                      "textAlign": "center"
+                    }
+                  ]
+                },
+                {
+                  "id": "metric-disk",
+                  "type": "Group",
+                  "children": [
+                    {
+                      "id": "metric-label-disk",
+                      "type": "Text",
+                      "text": "Disk Usage",
+                      "fontSize": "12px",
+                      "color": "#cbd5e1",
+                      "marginBottom": "8px"
+                    },
+                    {
+                      "id": "metric-gauge-disk",
+                      "type": "RadialGauge",
+                      "value": 68,
+                      "max": 100,
+                      "size": "100px",
+                      "colors": [
+                        { "threshold": 50, "color": "#10b981" },
+                        { "threshold": 80, "color": "#f59e0b" },
+                        { "threshold": 100, "color": "#ef4444" }
+                      ]
+                    },
+                    {
+                      "id": "metric-value-disk",
+                      "type": "Text",
+                      "text": "264 GB / 387 GB",
+                      "fontSize": "12px",
+                      "fontWeight": "600",
+                      "color": "#10b981",
+                      "marginTop": "8px",
+                      "textAlign": "center"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+
+    {
+      "id": "containers-section",
+      "type": "Group",
+      "marginBottom": "32px",
+      "children": [
+        {
+          "id": "containers-title",
+          "type": "Text",
+          "text": "Running Containers",
+          "fontSize": "16px",
+          "fontWeight": "600",
+          "color": "#f1f5f9",
+          "marginBottom": "16px"
+        },
+        {
+          "id": "containers-table",
+          "type": "Table",
+          "border": "1px solid #334155",
+          "background": "#1e293b",
+          "columns": [
+            {
+              "id": "col-name",
+              "name": "Name",
+              "width": "35%"
+            },
+            {
+              "id": "col-status",
+              "name": "Status",
+              "width": "20%"
+            },
+            {
+              "id": "col-cpu",
+              "name": "CPU",
+              "width": "15%"
+            },
+            {
+              "id": "col-memory",
+              "name": "Memory",
+              "width": "20%"
+            },
+            {
+              "id": "col-uptime",
+              "name": "Uptime",
+              "width": "10%"
+            }
+          ],
+          "rows": [
+            {
+              "id": "row-1",
+              "cells": [
+                { "content": "sevene-seveneclient" },
+                { "content": "🟢 Running", "color": "#10b981" },
+                { "content": "0.5%" },
+                { "content": "256 MB" },
+                { "content": "9h" }
+              ]
+            },
+            {
+              "id": "row-2",
+              "cells": [
+                { "content": "matrix-synapse" },
+                { "content": "🟢 Running", "color": "#10b981" },
+                { "content": "2.1%" },
+                { "content": "1.2 GB" },
+                { "content": "15d" }
+              ]
+            },
+            {
+              "id": "row-3",
+              "cells": [
+                { "content": "nginx-reverse-proxy" },
+                { "content": "🟢 Running", "color": "#10b981" },
+                { "content": "0.1%" },
+                { "content": "128 MB" },
+                { "content": "45d" }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+
+    {
+      "id": "deployments-section",
+      "type": "Group",
+      "children": [
+        {
+          "id": "deployments-title",
+          "type": "Text",
+          "text": "Recent Deployments",
+          "fontSize": "16px",
+          "fontWeight": "600",
+          "color": "#f1f5f9",
+          "marginBottom": "16px"
+        },
+        {
+          "id": "deployment-item-1",
+          "type": "Card",
+          "padding": "16px",
+          "border": "1px solid #334155",
+          "background": "#1e293b",
+          "marginBottom": "12px",
+          "display": "flex",
+          "justifyContent": "space-between",
+          "alignItems": "center",
+          "children": [
+            {
+              "id": "deploy-info-1",
+              "type": "Group",
+              "children": [
+                {
+                  "id": "deploy-name-1",
+                  "type": "Text",
+                  "text": "sevene-seveneclient v1.2.3",
+                  "fontSize": "14px",
+                  "fontWeight": "500",
+                  "color": "#f1f5f9"
+                },
+                {
+                  "id": "deploy-time-1",
+                  "type": "Text",
+                  "text": "Deployed 2 hours ago",
+                  "fontSize": "12px",
+                  "color": "#cbd5e1",
+                  "marginTop": "4px"
+                }
+              ]
+            },
+            {
+              "id": "deploy-badge-1",
+              "type": "Badge",
+              "text": "✓ SUCCESS",
+              "variant": "success"
+            }
+          ]
+        },
+        {
+          "id": "deployment-item-2",
+          "type": "Card",
+          "padding": "16px",
+          "border": "1px solid #334155",
+          "background": "#1e293b",
+          "marginBottom": "12px",
+          "display": "flex",
+          "justifyContent": "space-between",
+          "alignItems": "center",
+          "children": [
+            {
+              "id": "deploy-info-2",
+              "type": "Group",
+              "children": [
+                {
+                  "id": "deploy-name-2",
+                  "type": "Text",
+                  "text": "matrix-bot v2.1.0",
+                  "fontSize": "14px",
+                  "fontWeight": "500",
+                  "color": "#f1f5f9"
+                },
+                {
+                  "id": "deploy-time-2",
+                  "type": "Text",
+                  "text": "Deployed 1 day ago",
+                  "fontSize": "12px",
+                  "color": "#cbd5e1",
+                  "marginTop": "4px"
+                }
+              ]
+            },
+            {
+              "id": "deploy-badge-2",
+              "type": "Badge",
+              "text": "✓ SUCCESS",
+              "variant": "success"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+
+  "autoRefresh": {
+    "enabled": true,
+    "interval": "30s",
+    "endpoint": "GET /api/status"
+  },
+
+  "states": {
+    "loading": {
+      "description": "Initial data loading",
+      "showSkeletons": true
+    },
+    "loaded": {
+      "description": "Data successfully loaded",
+      "showContent": true
+    },
+    "error": {
+      "description": "API error",
+      "alert": {
+        "type": "error",
+        "message": "Failed to fetch dashboard data. Retrying in 30s..."
+      }
+    },
+    "updating": {
+      "description": "Background refresh",
+      "showSpinner": true
+    }
+  },
+
+  "theme": {
+    "mode": "dark",
+    "primaryColor": "#0ea5e9",
+    "successColor": "#10b981",
+    "warningColor": "#f59e0b",
+    "errorColor": "#ef4444"
+  },
+
+  "notes": [
+    "Dashboard refreshes automatically every 30 seconds",
+    "Gauge charts show CPU, RAM, and Disk usage with color coding",
+    "Status badges indicate health (UP/DOWN)",
+    "Containers table is scrollable on smaller screens",
+    "Notifications bell shows unread alert count",
+    "All metrics update in real-time via WebSocket",
+    "Admins see full dashboard, users see restricted view"
+  ]
+}

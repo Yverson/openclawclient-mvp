@@ -1,0 +1,664 @@
+{
+  "screen": "FileSearchScreen",
+  "version": "1.0",
+  "title": "File Search - Local Disk Search & Preview",
+  "description": "Search files on disk by name, type, date. Preview and open files.",
+  "targetResolutions": ["1920x1080", "1366x768", "1024x768"],
+  "darkMode": true,
+
+  "layout": {
+    "type": "single",
+    "background": "#0f172a",
+    "padding": "24px"
+  },
+
+  "components": [
+    {
+      "id": "header",
+      "type": "Group",
+      "marginBottom": "24px",
+      "children": [
+        {
+          "id": "title",
+          "type": "Text",
+          "text": "File Search",
+          "fontSize": "28px",
+          "fontWeight": "bold",
+          "color": "#f1f5f9"
+        }
+      ]
+    },
+
+    {
+      "id": "search-bar",
+      "type": "Card",
+      "padding": "20px",
+      "border": "1px solid #334155",
+      "background": "#1e293b",
+      "marginBottom": "24px",
+      "children": [
+        {
+          "id": "search-input-main",
+          "type": "Input",
+          "placeholder": "Search files... (name, extension, or location)",
+          "type": "search",
+          "width": "100%",
+          "padding": "12px 16px 12px 40px",
+          "borderRadius": "6px",
+          "border": "1px solid #334155",
+          "background": "#0f172a",
+          "color": "#f1f5f9",
+          "fontSize": "15px",
+          "focusBorder": "1px solid #0ea5e9",
+          "focusShadow": "0 0 0 3px rgba(14, 165, 233, 0.1)",
+          "icon": {
+            "position": "prefix",
+            "name": "search",
+            "size": "18px",
+            "color": "#0ea5e9"
+          },
+          "onChange": "handleSearch",
+          "debounce": "300ms"
+        }
+      ]
+    },
+
+    {
+      "id": "filters-row",
+      "type": "Group",
+      "display": "flex",
+      "gap": "12px",
+      "marginBottom": "24px",
+      "flexWrap": "wrap",
+      "children": [
+        {
+          "id": "filter-type",
+          "type": "Group",
+          "display": "flex",
+          "gap": "6px",
+          "alignItems": "center",
+          "children": [
+            {
+              "id": "filter-type-label",
+              "type": "Text",
+              "text": "Type:",
+              "fontSize": "13px",
+              "color": "#cbd5e1",
+              "fontWeight": "500"
+            },
+            {
+              "id": "filter-type-select",
+              "type": "Dropdown",
+              "trigger": "All Files",
+              "variant": "secondary",
+              "size": "sm",
+              "options": [
+                { "id": "type-all", "label": "All Files" },
+                { "id": "type-docs", "label": "Documents (PDF, DOC, TXT)" },
+                { "id": "type-images", "label": "Images (PNG, JPG, GIF)" },
+                { "id": "type-code", "label": "Code (JS, PY, RS)" },
+                { "id": "type-archive", "label": "Archives (ZIP, TAR)" }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "filter-date",
+          "type": "Group",
+          "display": "flex",
+          "gap": "6px",
+          "alignItems": "center",
+          "children": [
+            {
+              "id": "filter-date-label",
+              "type": "Text",
+              "text": "Modified:",
+              "fontSize": "13px",
+              "color": "#cbd5e1",
+              "fontWeight": "500"
+            },
+            {
+              "id": "filter-date-select",
+              "type": "Dropdown",
+              "trigger": "Anytime",
+              "variant": "secondary",
+              "size": "sm",
+              "options": [
+                { "id": "date-any", "label": "Anytime" },
+                { "id": "date-today", "label": "Today" },
+                { "id": "date-week", "label": "This Week" },
+                { "id": "date-month", "label": "This Month" },
+                { "id": "date-year", "label": "This Year" }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "filter-size",
+          "type": "Group",
+          "display": "flex",
+          "gap": "6px",
+          "alignItems": "center",
+          "children": [
+            {
+              "id": "filter-size-label",
+              "type": "Text",
+              "text": "Size:",
+              "fontSize": "13px",
+              "color": "#cbd5e1",
+              "fontWeight": "500"
+            },
+            {
+              "id": "filter-size-select",
+              "type": "Dropdown",
+              "trigger": "Any Size",
+              "variant": "secondary",
+              "size": "sm",
+              "options": [
+                { "id": "size-any", "label": "Any Size" },
+                { "id": "size-small", "label": "< 10 MB" },
+                { "id": "size-medium", "label": "10 - 100 MB" },
+                { "id": "size-large", "label": "> 100 MB" }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+
+    {
+      "id": "results-section",
+      "type": "Group",
+      "display": "grid",
+      "gridTemplateColumns": "1fr 300px",
+      "gap": "16px",
+      "children": [
+        {
+          "id": "results-list",
+          "type": "Group",
+          "children": [
+            {
+              "id": "results-header",
+              "type": "Group",
+              "display": "flex",
+              "justifyContent": "space-between",
+              "alignItems": "center",
+              "marginBottom": "12px",
+              "paddingBottom": "12px",
+              "borderBottom": "1px solid #334155",
+              "children": [
+                {
+                  "id": "results-count",
+                  "type": "Text",
+                  "text": "42 results found",
+                  "fontSize": "14px",
+                  "fontWeight": "500",
+                  "color": "#cbd5e1"
+                },
+                {
+                  "id": "sort-dropdown",
+                  "type": "Dropdown",
+                  "trigger": "Newest First",
+                  "variant": "secondary",
+                  "size": "sm",
+                  "options": [
+                    { "id": "sort-newest", "label": "Newest First" },
+                    { "id": "sort-oldest", "label": "Oldest First" },
+                    { "id": "sort-name", "label": "Name A-Z" },
+                    { "id": "sort-size", "label": "Size (Large to Small)" }
+                  ]
+                }
+              ]
+            },
+            {
+              "id": "file-list",
+              "type": "ScrollableContainer",
+              "maxHeight": "600px",
+              "overflowY": "auto",
+              "gap": "8px",
+              "children": [
+                {
+                  "id": "file-item-1",
+                  "type": "Card",
+                  "padding": "16px",
+                  "border": "1px solid #334155",
+                  "background": "#1e293b",
+                  "borderRadius": "4px",
+                  "cursor": "pointer",
+                  "hover": {
+                    "background": "#293548",
+                    "borderColor": "#475569"
+                  },
+                  "onClick": "selectFile(1)",
+                  "display": "flex",
+                  "gap": "12px",
+                  "alignItems": "flex-start",
+                  "children": [
+                    {
+                      "id": "file-icon-1",
+                      "type": "Icon",
+                      "name": "file-pdf",
+                      "size": "32px",
+                      "color": "#ef4444",
+                      "marginTop": "2px"
+                    },
+                    {
+                      "id": "file-info-1",
+                      "type": "Group",
+                      "flex": 1,
+                      "children": [
+                        {
+                          "id": "file-name-1",
+                          "type": "Text",
+                          "text": "project-proposal.pdf",
+                          "fontSize": "13px",
+                          "fontWeight": "600",
+                          "color": "#f1f5f9"
+                        },
+                        {
+                          "id": "file-path-1",
+                          "type": "Text",
+                          "text": "/Users/john/Documents/Projects/",
+                          "fontSize": "11px",
+                          "color": "#64748b",
+                          "marginTop": "4px"
+                        },
+                        {
+                          "id": "file-meta-1",
+                          "type": "Group",
+                          "display": "flex",
+                          "gap": "12px",
+                          "marginTop": "6px",
+                          "children": [
+                            {
+                              "id": "file-size-1",
+                              "type": "Text",
+                              "text": "2.4 MB",
+                              "fontSize": "11px",
+                              "color": "#cbd5e1"
+                            },
+                            {
+                              "id": "file-modified-1",
+                              "type": "Text",
+                              "text": "2 days ago",
+                              "fontSize": "11px",
+                              "color": "#cbd5e1"
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "id": "file-actions-1",
+                      "type": "Group",
+                      "display": "flex",
+                      "gap": "8px",
+                      "children": [
+                        {
+                          "id": "action-open-1",
+                          "type": "Button",
+                          "variant": "ghost",
+                          "size": "sm",
+                          "icon": "external-link",
+                          "onClick": "openFile(1)"
+                        },
+                        {
+                          "id": "action-show-1",
+                          "type": "Button",
+                          "variant": "ghost",
+                          "size": "sm",
+                          "icon": "folder-open",
+                          "onClick": "showInExplorer(1)"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "id": "file-item-2",
+                  "type": "Card",
+                  "padding": "16px",
+                  "border": "1px solid #334155",
+                  "background": "#1e293b",
+                  "borderRadius": "4px",
+                  "cursor": "pointer",
+                  "hover": { "background": "#293548" },
+                  "onClick": "selectFile(2)",
+                  "display": "flex",
+                  "gap": "12px",
+                  "alignItems": "flex-start",
+                  "children": [
+                    {
+                      "id": "file-icon-2",
+                      "type": "Icon",
+                      "name": "file-spreadsheet",
+                      "size": "32px",
+                      "color": "#10b981"
+                    },
+                    {
+                      "id": "file-info-2",
+                      "type": "Group",
+                      "flex": 1,
+                      "children": [
+                        {
+                          "id": "file-name-2",
+                          "type": "Text",
+                          "text": "quarterly-budget.xlsx",
+                          "fontSize": "13px",
+                          "fontWeight": "600",
+                          "color": "#f1f5f9"
+                        },
+                        {
+                          "id": "file-path-2",
+                          "type": "Text",
+                          "text": "/Users/john/Documents/Finance/",
+                          "fontSize": "11px",
+                          "color": "#64748b",
+                          "marginTop": "4px"
+                        },
+                        {
+                          "id": "file-meta-2",
+                          "type": "Group",
+                          "display": "flex",
+                          "gap": "12px",
+                          "marginTop": "6px",
+                          "children": [
+                            {
+                              "id": "file-size-2",
+                              "type": "Text",
+                              "text": "856 KB",
+                              "fontSize": "11px",
+                              "color": "#cbd5e1"
+                            },
+                            {
+                              "id": "file-modified-2",
+                              "type": "Text",
+                              "text": "Today",
+                              "fontSize": "11px",
+                              "color": "#cbd5e1"
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "id": "file-actions-2",
+                      "type": "Group",
+                      "display": "flex",
+                      "gap": "8px",
+                      "children": [
+                        {
+                          "id": "action-open-2",
+                          "type": "Button",
+                          "variant": "ghost",
+                          "size": "sm",
+                          "icon": "external-link",
+                          "onClick": "openFile(2)"
+                        },
+                        {
+                          "id": "action-show-2",
+                          "type": "Button",
+                          "variant": "ghost",
+                          "size": "sm",
+                          "icon": "folder-open",
+                          "onClick": "showInExplorer(2)"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "id": "file-item-3",
+                  "type": "Card",
+                  "padding": "16px",
+                  "border": "1px solid #334155",
+                  "background": "#1e293b",
+                  "borderRadius": "4px",
+                  "cursor": "pointer",
+                  "hover": { "background": "#293548" },
+                  "onClick": "selectFile(3)",
+                  "display": "flex",
+                  "gap": "12px",
+                  "alignItems": "flex-start",
+                  "children": [
+                    {
+                      "id": "file-icon-3",
+                      "type": "Icon",
+                      "name": "file-image",
+                      "size": "32px",
+                      "color": "#f59e0b"
+                    },
+                    {
+                      "id": "file-info-3",
+                      "type": "Group",
+                      "flex": 1,
+                      "children": [
+                        {
+                          "id": "file-name-3",
+                          "type": "Text",
+                          "text": "screenshot-q1-results.png",
+                          "fontSize": "13px",
+                          "fontWeight": "600",
+                          "color": "#f1f5f9"
+                        },
+                        {
+                          "id": "file-path-3",
+                          "type": "Text",
+                          "text": "/Users/john/Pictures/",
+                          "fontSize": "11px",
+                          "color": "#64748b",
+                          "marginTop": "4px"
+                        },
+                        {
+                          "id": "file-meta-3",
+                          "type": "Group",
+                          "display": "flex",
+                          "gap": "12px",
+                          "marginTop": "6px",
+                          "children": [
+                            {
+                              "id": "file-size-3",
+                              "type": "Text",
+                              "text": "3.2 MB",
+                              "fontSize": "11px",
+                              "color": "#cbd5e1"
+                            },
+                            {
+                              "id": "file-modified-3",
+                              "type": "Text",
+                              "text": "1 week ago",
+                              "fontSize": "11px",
+                              "color": "#cbd5e1"
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "id": "file-actions-3",
+                      "type": "Group",
+                      "display": "flex",
+                      "gap": "8px",
+                      "children": [
+                        {
+                          "id": "action-open-3",
+                          "type": "Button",
+                          "variant": "ghost",
+                          "size": "sm",
+                          "icon": "external-link",
+                          "onClick": "openFile(3)"
+                        },
+                        {
+                          "id": "action-show-3",
+                          "type": "Button",
+                          "variant": "ghost",
+                          "size": "sm",
+                          "icon": "folder-open",
+                          "onClick": "showInExplorer(3)"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+
+        {
+          "id": "preview-panel",
+          "type": "Card",
+          "padding": "16px",
+          "border": "1px solid #334155",
+          "background": "#1e293b",
+          "height": "fit-content",
+          "position": "sticky",
+          "top": "0",
+          "children": [
+            {
+              "id": "preview-title",
+              "type": "Text",
+              "text": "File Preview",
+              "fontSize": "13px",
+              "fontWeight": "600",
+              "color": "#cbd5e1",
+              "marginBottom": "12px"
+            },
+            {
+              "id": "preview-thumbnail",
+              "type": "Image",
+              "src": "https://via.placeholder.com/260x180?text=PDF+Preview",
+              "width": "100%",
+              "height": "auto",
+              "borderRadius": "4px",
+              "border": "1px solid #334155",
+              "marginBottom": "12px"
+            },
+            {
+              "id": "preview-info",
+              "type": "Group",
+              "gap": "8px",
+              "children": [
+                {
+                  "id": "preview-name",
+                  "type": "Text",
+                  "text": "project-proposal.pdf",
+                  "fontSize": "12px",
+                  "fontWeight": "600",
+                  "color": "#f1f5f9",
+                  "truncate": true
+                },
+                {
+                  "id": "preview-size",
+                  "type": "Text",
+                  "text": "Size: 2.4 MB",
+                  "fontSize": "11px",
+                  "color": "#cbd5e1"
+                },
+                {
+                  "id": "preview-modified",
+                  "type": "Text",
+                  "text": "Modified: Feb 9, 2026",
+                  "fontSize": "11px",
+                  "color": "#cbd5e1"
+                },
+                {
+                  "id": "preview-divider",
+                  "type": "Divider",
+                  "marginTop": "8px",
+                  "marginBottom": "8px"
+                },
+                {
+                  "id": "preview-button-open",
+                  "type": "Button",
+                  "text": "Open File",
+                  "variant": "primary",
+                  "width": "100%",
+                  "onClick": "openFile(1)"
+                },
+                {
+                  "id": "preview-button-show",
+                  "type": "Button",
+                  "text": "Show in Explorer",
+                  "variant": "secondary",
+                  "width": "100%",
+                  "marginTop": "8px",
+                  "onClick": "showInExplorer(1)"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+
+  "states": {
+    "idle": {
+      "description": "No search yet",
+      "emptyState": {
+        "icon": "search",
+        "title": "Start searching",
+        "message": "Enter a filename or use filters to find files"
+      }
+    },
+    "searching": {
+      "description": "Search in progress",
+      "spinner": true,
+      "message": "Searching your disk..."
+    },
+    "results": {
+      "description": "Results displayed",
+      "showResults": true
+    },
+    "noResults": {
+      "description": "No files found",
+      "emptyState": {
+        "icon": "file-x",
+        "title": "No files found",
+        "message": "Try different search terms or adjust your filters"
+      }
+    }
+  },
+
+  "interactions": {
+    "onSearch": {
+      "action": "debounce",
+      "debounceMs": 300,
+      "endpoint": "LOCAL (file system scan)",
+      "maxResults": 100
+    },
+    "onFilterChange": {
+      "action": "applyFilter",
+      "refetchResults": true
+    },
+    "onFileSelect": {
+      "action": "displayPreview",
+      "loadThumbnail": true
+    },
+    "onOpenFile": {
+      "action": "launchDefault",
+      "permission": "userInitiated"
+    },
+    "onShowInExplorer": {
+      "action": "reveal",
+      "platformSpecific": true
+    }
+  },
+
+  "theme": {
+    "mode": "dark",
+    "primaryColor": "#0ea5e9"
+  },
+
+  "notes": [
+    "All file operations are local - no uploads to remote servers",
+    "Search scope: user's home directory + common document folders",
+    "Supports previews for: PDF, images, code, spreadsheets",
+    "File icons colored by type for quick visual identification",
+    "Open File uses OS default application",
+    "Show in Explorer opens native file manager",
+    "Search is indexed and cached for fast results",
+    "Respects OS file permissions and hidden files setting"
+  ]
+}
