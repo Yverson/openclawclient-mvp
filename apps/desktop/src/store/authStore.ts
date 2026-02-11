@@ -67,13 +67,30 @@ export const useAuthStore = create<AuthStore>((set) => ({
     })
   },
 
-  hydrate: () => {
+  hydrate: async () => {
     const token = localStorage.getItem("auth_token")
     const apiUrl = localStorage.getItem("api_url")
 
     if (token && apiUrl) {
       set({ token, apiUrl })
       apiClient.setBaseUrl(apiUrl)
+      
+      // Verify token is still valid by fetching user info
+      try {
+        const response = await apiClient.get("/auth/me")
+        const user: User = {
+          id: response.data.userId,
+          email: response.data.email,
+          role: "user"
+        }
+        set({ user })
+      } catch (error) {
+        // Token expired or invalid, clear it
+        console.error("Token validation failed:", error)
+        localStorage.removeItem("auth_token")
+        localStorage.removeItem("api_url")
+        set({ token: null, apiUrl: null, user: null })
+      }
     }
   },
 }))

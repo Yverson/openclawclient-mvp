@@ -1,4 +1,4 @@
-import React, { useState } from "react"
+import React, { useState, useEffect } from "react"
 import { Settings, AlertCircle } from "lucide-react"
 import { Button } from "@/components/Button"
 import { Input } from "@/components/Input"
@@ -9,7 +9,23 @@ import { useAuth } from "@/hooks/useAuth"
 export const LoginScreen: React.FC = () => {
   const [apiUrl, setApiUrl] = useState("http://37.60.228.219:18790")
   const [token, setToken] = useState("")
-  const { login, isLoading, error } = useAuth()
+  const [isChecking, setIsChecking] = useState(true)
+  const { login, isLoading, error, token: savedToken, apiUrl: savedApiUrl } = useAuth()
+
+  // Auto-login if token exists in localStorage
+  useEffect(() => {
+    const savedToken = localStorage.getItem("auth_token")
+    const savedApiUrl = localStorage.getItem("api_url")
+    
+    if (savedToken && savedApiUrl) {
+      // Already logged in, skip to dashboard
+      console.log("✅ Already authenticated, skipping login screen")
+      setIsChecking(false)
+      // The parent component should handle routing based on useAuth state
+    } else {
+      setIsChecking(false)
+    }
+  }, [])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -21,6 +37,18 @@ export const LoginScreen: React.FC = () => {
     } catch (err) {
       console.error("Login failed:", err)
     }
+  }
+
+  // If already authenticated, don't show login form
+  if (isChecking) {
+    return (
+      <div className="flex h-screen w-screen items-center justify-center bg-slate-900">
+        <div className="text-center">
+          <Spinner size="lg" />
+          <p className="text-slate-300 mt-4">Vérification de la session...</p>
+        </div>
+      </div>
+    )
   }
 
   return (
