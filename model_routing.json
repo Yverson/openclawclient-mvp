@@ -1,0 +1,31 @@
+{
+  "version": "1.0",
+  "policy": "least_cost_available",
+  "chains": {
+    "default": [
+      "openai-codex/gpt-5-nano",
+      "openai-codex/gpt-5-mini",
+      "openai-codex/gpt-5.1-codex",
+      "openai-codex/gpt-5.3-codex",
+      "anthropic/claude-haiku-4-5-20251001",
+      "anthropic/claude-sonnet-4-5-20251001",
+      "local/deepseek-r1:7b"
+    ],
+    "coding": [
+      "openai-codex/gpt-5.3-codex",
+      "openai-codex/gpt-5.1-codex",
+      "anthropic/claude-sonnet-4-5-20251001",
+      "local/deepseek-r1:7b"
+    ],
+    "docs": [
+      "anthropic/claude-haiku-4-5-20251001",
+      "openai-codex/gpt-5-mini",
+      "openai-codex/gpt-5-nano",
+      "local/deepseek-r1:7b"
+    ]
+  },
+  "notes": {
+    "logging": "Log model + fallback + reason in run artifacts (ops/runs/*).",
+    "hardcode": "No hardcoded model names in code: load this file."
+  }
+}

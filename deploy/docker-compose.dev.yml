@@ -1,0 +1,16 @@
+services:
+  web:
+    build:
+      context: ..
+      dockerfile: Dockerfile
+    environment:
+      - NODE_ENV=development
+    ports:
+      - "0.0.0.0:3005:3000"
+    deploy:
+      resources:
+        limits:
+          cpus: '1.00'
+          memory: 1024M
+
+# NOTE v1.5 quotas/cleanup/stop-idle: to be enforced by the host scheduler / dokploy policies.

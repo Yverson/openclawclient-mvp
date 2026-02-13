@@ -1,0 +1,10 @@
+{
+  "env": "dev",
+  "project": "openclawclient-mvp",
+  "domainBase": "openclaw.gaddielcloud.online",
+  "wildcardEnabled": true,
+  "routes": {
+    "app": "app.openclawclient-mvp.openclaw.gaddielcloud.online",
+    "api": "api.openclawclient-mvp.openclaw.gaddielcloud.online"
+  }
+}
