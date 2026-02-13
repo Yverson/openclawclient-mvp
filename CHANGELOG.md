@@ -3,17 +3,26 @@
 Format inspiré de Keep a Changelog.
 
 ## [Unreleased]
+
 ### Added
-- `apiClient` initialise désormais automatiquement son `baseURL` depuis `localStorage.api_url` au chargement (`apps/desktop/src/services/api.ts`).
+- Login: redirection automatique vers `/dashboard` après authentification réussie.
+- Login: l’URL API est désormais fixée côté déploiement (champ UI masqué) et affiche simplement l’endpoint actif.
+- Backend: durcissement WebSocket — seules les connexions sur `/ws/matrix` sont acceptées.
+- Backend: suppression du message intermédiaire “⏳ Message envoyé…” (désactivable via `SEND_BRIDGE_STATUS_MESSAGES=1`).
+- Infra: service systemd `openclawclient-backend.service` (auto-restart + logs via journalctl).
 
 ### Changed
-- Flux login frontend: après authentification réussie, l’app applique explicitement `apiClient.setBaseUrl(apiUrl)` (`apps/desktop/src/screens/LoginScreen.tsx`).
+- Archi déploiement: séparation domaines
+  - Frontend: `https://chat.gaddielcloud.online`
+  - API: `https://chatapi.gaddielcloud.online`
+- Frontend: URL API par défaut → `https://chatapi.gaddielcloud.online`.
 
 ### Fixed
-- Bug `Failed to fetch status` (`/api/status`): correction d’un défaut d’initialisation de l’URL API côté frontend juste après login.
-- Validation technique effectuée:
-  - backend: `POST /auth/login` OK, `GET /api/status` OK (authentifié)
-  - frontend: tests Vitest OK (**343/343**), build web OK
+- Frontend: correction du flux login (state/hydrate) pour éviter “login OK mais pas de redirection”.
+- Backend: relay des réponses agent — ne dépend plus uniquement de `payload.state === "final"` (fallback + anti-dup), ce qui rétablit les réponses en production.
+
+### Security
+- CORS: origines autorisées mises à jour pour `chat.gaddielcloud.online` et `chatapi.gaddielcloud.online`.
 
 ### Removed
 - N/A
