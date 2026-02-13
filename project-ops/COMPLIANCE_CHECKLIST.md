@@ -1,0 +1,27 @@
+# Compliance Checklist — Project Ops v1.5 (openclawclient-mvp)
+
+## MUST (1–11)
+- [x] Isolation projet (`projects/openclawclient-mvp/`)
+- [x] Persistant-first (docs + memory)
+- [~] Sub-agents obligatoires (règle globale OK; enforcement projet à finaliser)
+- [x] Routage modèles: `model_routing.json` présent
+- [x] Anti-boucle: fichiers `.state/quarantine.json` + règle 3 échecs (enforcement à finaliser)
+- [~] ProjectAgent orchestrateur-only (`proj:<slug>` pas encore créé)
+- [~] Reporting Telegram global (config DM prête, envoi auto à brancher)
+- [~] Taiga sync near real-time (Taiga self-host OK; sync agent à brancher)
+- [x] Git actif (repo existant)
+- [~] Deploy DEV docker par projet (templates présents; pipeline à brancher)
+- [x] Secrets jamais en clair (secrets dans /root/.openclaw/secrets)
+
+## v1.5 additions
+- [~] Secrets: rotation/audit (à implémenter)
+- [~] Docker quotas/cleanup/stop idle (à implémenter côté host)
+- [~] Taiga idempotence/dédoublonnage (mapping `.state/taiga_map.json` prêt)
+- [~] Conflits champ-par-champ (policy dans `ops/taiga.json`)
+- [~] Circuit breaker providers LLM (fichier state prêt)
+- [~] Health + dead-man (scripts à ajouter/brancher)
+- [~] Auto-exécution stricte (scripts à ajouter/brancher)
+- [~] DB/migrations strategy (à formaliser si besoin)
+- [~] Mono vs multi repo (à formaliser)
+- [x] Zones synced fields (BACKLOG.md)
+- [~] Human-in-the-loop (unquarantine via tag `retry-ok` à brancher)

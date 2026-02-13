@@ -1,0 +1,1 @@
+*/10 * * * * /opt/openclawclient-mvp/deploy/monitoring/auto_run_safe.sh >> /var/log/openclaw/auto-run-safe.log 2>&1

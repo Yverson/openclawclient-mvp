@@ -1,0 +1,1 @@
+*/10 * * * * /opt/openclawclient-mvp/deploy/monitoring/deadman_check.sh https://taiga.openclaw.gaddielcloud.online >> /var/log/openclaw/deadman.log 2>&1
