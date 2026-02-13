@@ -22,6 +22,11 @@ class ApiClient {
       return config
     })
 
+    const persistedApiUrl = localStorage.getItem("api_url")
+    if (persistedApiUrl) {
+      this.setBaseUrl(persistedApiUrl)
+    }
+
     this.client.interceptors.response.use(
       (response) => response,
       (error) => {
@@ -36,8 +41,44 @@ class ApiClient {
   }
 
   setBaseUrl(url: string) {
-    this.baseUrl = url
-    this.client.defaults.baseURL = url
+    const normalized = url.replace(/\/+$/, "")
+    this.baseUrl = normalized
+    this.client.defaults.baseURL = normalized
+  }
+
+  private getAlternatePortBaseUrl(): string | null {
+    if (!this.baseUrl) return null
+
+    if (this.baseUrl.includes(":18790")) {
+      return this.baseUrl.replace(":18790", ":18789")
+    }
+    if (this.baseUrl.includes(":18789")) {
+      return this.baseUrl.replace(":18789", ":18790")
+    }
+
+    return null
+  }
+
+  private async withNetworkFallback<T>(request: () => Promise<T>): Promise<T> {
+    try {
+      return await request()
+    } catch (error: any) {
+      const isNetworkError = !!error && !error.response
+      const alternateBaseUrl = this.getAlternatePortBaseUrl()
+
+      if (!isNetworkError || !alternateBaseUrl) {
+        throw error
+      }
+
+      console.warn(
+        `Primary API URL unreachable (${this.baseUrl}), retrying with ${alternateBaseUrl}`
+      )
+
+      this.setBaseUrl(alternateBaseUrl)
+      localStorage.setItem("api_url", alternateBaseUrl)
+
+      return request()
+    }
   }
 
   async login(apiUrl: string, token: string): Promise<LoginResponse> {
@@ -52,34 +93,44 @@ class ApiClient {
     containers: Container[]
     deployments: Deployment[]
   }> {
-    const response = await this.client.get("/api/status")
-    return response.data
+    return this.withNetworkFallback(async () => {
+      const response = await this.client.get("/api/status")
+      return response.data
+    })
   }
 
   async getServers(): Promise<Server[]> {
-    const response = await this.client.get<{ servers: Server[] }>(
-      "/api/servers"
-    )
-    return response.data.servers || []
+    return this.withNetworkFallback(async () => {
+      const response = await this.client.get<{ servers: Server[] }>(
+        "/api/servers"
+      )
+      return response.data.servers || []
+    })
   }
 
   async getContainers(): Promise<Container[]> {
-    const response = await this.client.get<{ containers: Container[] }>(
-      "/api/containers"
-    )
-    return response.data.containers || []
+    return this.withNetworkFallback(async () => {
+      const response = await this.client.get<{ containers: Container[] }>(
+        "/api/containers"
+      )
+      return response.data.containers || []
+    })
   }
 
   async getDeployments(): Promise<Deployment[]> {
-    const response = await this.client.get<{ deployments: Deployment[] }>(
-      "/api/deployments"
-    )
-    return response.data.deployments || []
+    return this.withNetworkFallback(async () => {
+      const response = await this.client.get<{ deployments: Deployment[] }>(
+        "/api/deployments"
+      )
+      return response.data.deployments || []
+    })
   }
 
   async getUser(): Promise<User> {
-    const response = await this.client.get<User>("/api/user")
-    return response.data
+    return this.withNetworkFallback(async () => {
+      const response = await this.client.get<User>("/api/user")
+      return response.data
+    })
   }
 }
 

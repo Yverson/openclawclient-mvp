@@ -1,18 +1,34 @@
-import React, { useState, useEffect } from "react"
+import React, { useMemo, useState } from "react"
 import { Settings, AlertCircle } from "lucide-react"
 import { Button } from "@/components/Button"
 import { Input } from "@/components/Input"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/Card"
 import { Spinner } from "@/components/Spinner"
 import { useAuthStore } from "@/store/authStore"
+import { apiClient } from "@/services/api"
+
+const getDefaultApiUrl = () => {
+  const envUrl = import.meta.env.VITE_API_BASE_URL as string | undefined
+  if (envUrl && envUrl.trim().length > 0) {
+    return envUrl.trim().replace(/\/+$/, "")
+  }
+
+  if (typeof window !== "undefined") {
+    const { protocol, hostname } = window.location
+    return `${protocol}//${hostname}:18789`
+  }
+
+  return "http://37.60.228.219:18789"
+}
 
 export const LoginScreen: React.FC = () => {
-  const [apiUrl, setApiUrl] = useState("http://37.60.228.219:18790")
+  const defaultApiUrl = useMemo(() => getDefaultApiUrl(), [])
+  const [apiUrl, setApiUrl] = useState(defaultApiUrl)
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  
+
   const { setToken, setApiUrl: storeSetApiUrl, setUser } = useAuthStore()
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -21,55 +37,50 @@ export const LoginScreen: React.FC = () => {
       setError("All fields required")
       return
     }
-    
+
     setIsLoading(true)
     setError(null)
-    
+
     try {
       const response = await fetch(`${apiUrl}/auth/login`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password })
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
       })
 
       if (!response.ok) {
         const data = await response.json()
-        throw new Error(data.error || 'Login failed')
+        throw new Error(data.error || "Login failed")
       }
 
       const data = await response.json()
-      
-      console.log("✅ Login successful:", data)
-      
-      // Save to localStorage FIRST
+
       localStorage.setItem("auth_token", data.token)
       localStorage.setItem("api_url", apiUrl)
-      localStorage.setItem("auth_user", JSON.stringify({
-        id: data.user.id,
-        email: data.user.email,
-        role: "user"
-      }))
-      console.log("✅ localStorage saved")
-      console.log("Token in storage:", localStorage.getItem("auth_token")?.substring(0, 20) + "...")
-      
-      // Update auth store
+      apiClient.setBaseUrl(apiUrl)
+      localStorage.setItem(
+        "auth_user",
+        JSON.stringify({
+          id: data.user.id,
+          email: data.user.email,
+          role: "user",
+        })
+      )
+
       setToken(data.token)
       storeSetApiUrl(apiUrl)
       setUser({
         id: data.user.id,
         email: data.user.email,
-        role: "user"
+        role: "user",
       })
-      
-      console.log("✅ Auth store updated")
-      
-      // Small delay to ensure state updates
-      await new Promise(resolve => setTimeout(resolve, 100))
-      
+
+      await new Promise((resolve) => setTimeout(resolve, 100))
+
       setIsLoading(false)
     } catch (err: any) {
       console.error("Login failed:", err)
-      setError(err.message || 'Login failed')
+      setError(err.message || "Login failed")
       setIsLoading(false)
     }
   }
@@ -104,7 +115,7 @@ export const LoginScreen: React.FC = () => {
               <Input
                 id="apiUrl"
                 type="url"
-                placeholder="http://37.60.228.219:18790"
+                placeholder={defaultApiUrl}
                 value={apiUrl}
                 onChange={(e) => setApiUrl(e.target.value)}
                 disabled={isLoading}
@@ -159,11 +170,10 @@ export const LoginScreen: React.FC = () => {
           </form>
 
           <div className="mt-6 pt-6 border-t border-slate-700">
-            <p className="text-xs text-slate-500 text-center">
-              Demo credentials:
-            </p>
+            <p className="text-xs text-slate-500 text-center">Demo credentials:</p>
             <p className="text-xs text-slate-400 text-center mt-2">
-              Email: demo@example.com<br />
+              Email: demo@example.com
+              <br />
               Password: demo123
             </p>
           </div>

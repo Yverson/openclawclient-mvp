@@ -3,6 +3,7 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import expressWs from 'express-ws';
 import { initDatabase } from './services/database.js';
+import { gatewayClient } from './services/gateway.js';
 import { authMiddleware, optionalAuthMiddleware } from './middleware/auth.js';
 import authRoutes from './routes/auth.js';
 import apiRoutes from './routes/api.js';
@@ -11,7 +12,10 @@ import { setupWebSocketRoutes } from './routes/ws.js';
 dotenv.config();
 
 const PORT = process.env.PORT || 18789;
-const CORS_ORIGINS = (process.env.CORS_ORIGINS || 'http://localhost:3000').split(',');
+const CORS_ORIGINS = (process.env.CORS_ORIGINS || 'http://localhost:3000,http://localhost:5173')
+  .split(',')
+  .map((origin) => origin.trim())
+  .filter(Boolean);
 
 const app = express();
 
@@ -20,7 +24,13 @@ const { app: wsApp } = expressWs(app);
 
 // Middleware
 app.use(cors({
-  origin: CORS_ORIGINS,
+  origin: (origin, callback) => {
+    if (!origin) return callback(null, true);
+    if (CORS_ORIGINS.includes('*') || CORS_ORIGINS.includes(origin)) {
+      return callback(null, true);
+    }
+    return callback(new Error(`CORS blocked for origin: ${origin}`));
+  },
   credentials: true
 }));
 
@@ -78,6 +88,14 @@ async function start() {
     console.log('🚀 Initializing database...');
     await initDatabase();
     console.log('✅ Database initialized');
+
+    console.log('🔌 Connecting to OpenClaw Gateway...');
+    try {
+      await gatewayClient.connect();
+      console.log('✅ Gateway connected');
+    } catch (err: any) {
+      console.warn('⚠️ Gateway connection failed (will retry):', err.message);
+    }
 
     wsApp.listen(PORT, () => {
       console.log(`

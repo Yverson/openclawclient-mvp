@@ -46,11 +46,17 @@ export const useChat = () => {
       .connect(apiUrl, token, (message) => {
         if (message.type === "message" && message.data) {
           addMessage(message.data)
+        } else if (message.type === "history" && message.messages) {
+          // Load chat history from gateway
+          setMessages(message.messages)
         } else if (message.type === "typing") {
           setTypingIndicator(true)
           setTimeout(() => setTypingIndicator(false), 3000)
         } else if (message.type === "connected") {
           setConnected(true)
+          if (message.agentId) {
+            console.log(`🤖 Connected to agent: ${message.agentId}`)
+          }
         } else if (message.type === "disconnected") {
           setConnected(false)
         } else if (message.type === "error") {
