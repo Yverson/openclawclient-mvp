@@ -1,0 +1,73 @@
+services:
+  postgres:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_DB: taiga
+      POSTGRES_USER: taiga
+      POSTGRES_PASSWORD: ${TAIGA_DB_PASSWORD}
+    volumes:
+      - taiga_pg:/var/lib/postgresql/data
+    restart: unless-stopped
+
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+
+  taiga-back:
+    image: taigaio/taiga-back:latest
+    depends_on:
+      - postgres
+      - redis
+    environment:
+      TAIGA_SECRET_KEY: ${TAIGA_SECRET_KEY}
+      TAIGA_DB_HOST: postgres
+      TAIGA_DB_NAME: taiga
+      TAIGA_DB_USER: taiga
+      TAIGA_DB_PASSWORD: ${TAIGA_DB_PASSWORD}
+      TAIGA_DB_PORT: 5432
+      TAIGA_REDIS_HOST: redis
+      TAIGA_REDIS_PORT: 6379
+      TAIGA_SITES_SCHEME: https
+      TAIGA_SITES_DOMAIN: taiga.openclaw.gaddielcloud.online
+      TAIGA_PUBLIC_REGISTER_ENABLED: "false"
+      TAIGA_DEFAULT_FROM_EMAIL: ${TAIGA_ADMIN_EMAIL}
+    restart: unless-stopped
+
+  taiga-front:
+    image: taigaio/taiga-front-dist:latest
+    environment:
+      TAIGA_URL: https://taiga.openclaw.gaddielcloud.online
+      TAIGA_WEBSOCKETS_URL: wss://taiga.openclaw.gaddielcloud.online/events
+    restart: unless-stopped
+
+  taiga-events:
+    image: taigaio/taiga-events:latest
+    depends_on:
+      - redis
+    environment:
+      TAIGA_SECRET_KEY: ${TAIGA_SECRET_KEY}
+      REDIS_HOST: redis
+      RABBITMQ_HOST: ""
+    restart: unless-stopped
+
+  caddy:
+    image: caddy:2-alpine
+    depends_on:
+      - taiga-back
+      - taiga-front
+      - taiga-events
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    environment:
+      ACME_EMAIL: ${TAIGA_ACME_EMAIL}
+    restart: unless-stopped
+
+volumes:
+  taiga_pg:
+  caddy_data:
+  caddy_config:

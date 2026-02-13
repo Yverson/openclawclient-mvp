@@ -38,3 +38,6 @@ electron-builder-effective-config.json
 deploy/.env.dev
 sessions/
 reports/
+
+# Taiga deploy (secrets live elsewhere)
+deploy/taiga/.env

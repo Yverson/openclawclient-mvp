@@ -1,0 +1,28 @@
+{
+  email {$ACME_EMAIL}
+}
+
+# Frontend
+https://taiga.openclaw.gaddielcloud.online {
+  encode gzip
+
+  # API
+  handle_path /api/* {
+    reverse_proxy taiga-back:8000
+  }
+
+  # Admin (Django)
+  handle_path /admin/* {
+    reverse_proxy taiga-back:8000
+  }
+
+  # Events (websockets)
+  handle /events* {
+    reverse_proxy taiga-events:8888
+  }
+
+  # UI
+  handle {
+    reverse_proxy taiga-front:80
+  }
+}
