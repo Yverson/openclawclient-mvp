@@ -1,10 +1,12 @@
 import React, { useMemo, useState } from "react"
+import { Navigate, useNavigate } from "react-router-dom"
 import { Settings, AlertCircle } from "lucide-react"
 import { Button } from "@/components/Button"
 import { Input } from "@/components/Input"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/Card"
 import { Spinner } from "@/components/Spinner"
 import { useAuthStore } from "@/store/authStore"
+import { useAuth } from "@/hooks/useAuth"
 import { apiClient } from "@/services/api"
 
 const getDefaultApiUrl = () => {
@@ -14,22 +16,28 @@ const getDefaultApiUrl = () => {
   }
 
   if (typeof window !== "undefined") {
-    const { protocol, hostname } = window.location
-    return `${protocol}//${hostname}:18789`
+    return "https://chatapi.gaddielcloud.online"
   }
 
-  return "http://37.60.228.219:18789"
+  return "https://chatapi.gaddielcloud.online"
 }
 
 export const LoginScreen: React.FC = () => {
+  const { isAuthenticated } = useAuth()
+  const navigate = useNavigate()
+
   const defaultApiUrl = useMemo(() => getDefaultApiUrl(), [])
-  const [apiUrl, setApiUrl] = useState(defaultApiUrl)
+  const [apiUrl] = useState(defaultApiUrl)
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
   const { setToken, setApiUrl: storeSetApiUrl, setUser } = useAuthStore()
+
+  if (isAuthenticated) {
+    return <Navigate to="/dashboard" replace />
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -75,7 +83,10 @@ export const LoginScreen: React.FC = () => {
         role: "user",
       })
 
-      await new Promise((resolve) => setTimeout(resolve, 100))
+      await new Promise((resolve) => setTimeout(resolve, 50))
+
+      // Hard redirect inside SPA after successful login
+      navigate("/dashboard", { replace: true })
 
       setIsLoading(false)
     } catch (err: any) {
@@ -108,20 +119,11 @@ export const LoginScreen: React.FC = () => {
               </div>
             )}
 
-            <div className="space-y-2">
-              <label htmlFor="apiUrl" className="text-sm font-medium text-slate-300">
-                OpenClaw API URL
-              </label>
-              <Input
-                id="apiUrl"
-                type="url"
-                placeholder={defaultApiUrl}
-                value={apiUrl}
-                onChange={(e) => setApiUrl(e.target.value)}
-                disabled={isLoading}
-                required
-              />
-            </div>
+            {/* API URL is fixed in this deployment */}
+            <input type="hidden" name="apiUrl" value={apiUrl} />
+            <p className="text-xs text-slate-500 text-center">
+              API: <span className="text-slate-400">{defaultApiUrl}</span>
+            </p>
 
             <div className="space-y-2">
               <label htmlFor="email" className="text-sm font-medium text-slate-300">
@@ -156,7 +158,7 @@ export const LoginScreen: React.FC = () => {
             <Button
               type="submit"
               className="w-full"
-              disabled={isLoading || !apiUrl || !email || !password}
+              disabled={isLoading || !email || !password}
             >
               {isLoading ? (
                 <div className="flex items-center gap-2">
