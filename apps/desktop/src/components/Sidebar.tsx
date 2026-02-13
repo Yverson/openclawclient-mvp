@@ -1,4 +1,5 @@
 import React from "react"
+import { useNavigate, useLocation } from "react-router-dom"
 import {
   LayoutDashboard,
   Mail,
@@ -13,29 +14,29 @@ import { useAuth } from "@/hooks/useAuth"
 import { useUIStore } from "@/store/uiStore"
 import { cn } from "@/utils/cn"
 
-type Screen = "dashboard" | "mail" | "files" | "chat" | "settings"
-
 interface NavItem {
-  id: Screen
+  path: string
   label: string
   icon: React.ReactNode
 }
 
 const navItems: NavItem[] = [
-  { id: "dashboard", label: "Dashboard", icon: <LayoutDashboard className="w-5 h-5" /> },
-  { id: "mail", label: "Mail", icon: <Mail className="w-5 h-5" /> },
-  { id: "files", label: "Files", icon: <FileText className="w-5 h-5" /> },
-  { id: "chat", label: "Chat", icon: <MessageSquare className="w-5 h-5" /> },
-  { id: "settings", label: "Settings", icon: <Settings className="w-5 h-5" /> },
+  { path: "/dashboard", label: "Dashboard", icon: <LayoutDashboard className="w-5 h-5" /> },
+  { path: "/mail", label: "Mail", icon: <Mail className="w-5 h-5" /> },
+  { path: "/files", label: "Files", icon: <FileText className="w-5 h-5" /> },
+  { path: "/chat", label: "Chat", icon: <MessageSquare className="w-5 h-5" /> },
+  { path: "/settings", label: "Settings", icon: <Settings className="w-5 h-5" /> },
 ]
 
 export const Sidebar: React.FC = () => {
   const { user, logout } = useAuth()
-  const { currentScreen, setCurrentScreen, sidebarOpen, toggleSidebar } =
-    useUIStore()
+  const { sidebarOpen, toggleSidebar } = useUIStore()
+  const navigate = useNavigate()
+  const location = useLocation()
 
   const handleLogout = () => {
     logout()
+    navigate("/login")
   }
 
   return (
@@ -84,16 +85,16 @@ export const Sidebar: React.FC = () => {
         <nav className="flex-1 p-4 space-y-2">
           {navItems.map((item) => (
             <button
-              key={item.id}
+              key={item.path}
               onClick={() => {
-                setCurrentScreen(item.id)
+                navigate(item.path)
                 if (window.innerWidth < 768) {
                   toggleSidebar()
                 }
               }}
               className={cn(
                 "w-full flex items-center gap-3 px-4 py-3 rounded-lg font-medium transition-all duration-200",
-                currentScreen === item.id
+                location.pathname === item.path
                   ? "bg-primary-600 text-white"
                   : "text-slate-300 hover:bg-slate-700 active:bg-slate-600"
               )}
