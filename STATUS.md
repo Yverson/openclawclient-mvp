@@ -25,7 +25,8 @@
 - DEV: (à définir)
 
 ## État sync Taiga + dernier webhook
-- Sync: désactivé (à configurer)
+- Sync: config générée (ops/taiga.json) — **pull-only + dry-run** par défaut (sécurité)
+- Webhook: prévu (désactivé tant que domaine/secret Taiga non confirmés)
 - Webhook last-seen: n/a
 
 ## Health Ops v1.5

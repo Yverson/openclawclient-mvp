@@ -1,0 +1,27 @@
+{
+  "enabled": false,
+  "host": "https://api.taiga.io",
+  "project_slug": "openclawclient-mvp",
+  "webhook": {
+    "enabled": false,
+    "url": "https://ops.openclawclient-mvp.openclaw.gaddielcloud.online/taiga/webhook",
+    "signature_header": "X-TAIGA-SIGNATURE",
+    "secret_ref": "secret://taiga/webhook_secret"
+  },
+  "auth": {
+    "token_ref": "secret://taiga/token"
+  },
+  "sync": {
+    "mode": "pull_only",
+    "interval_minutes": 10,
+    "dry_run": true,
+    "idempotence": true,
+    "dedupe": "event_hash"
+  },
+  "conflict_policy": {
+    "taiga_wins": ["status", "assignee", "priority", "severity", "order", "milestone", "due_date"],
+    "openclaw_wins": ["acceptance_criteria", "tech_notes", "architecture_notes", "plan_details", "qa_checklists"],
+    "title": "taiga_wins_unless_adr",
+    "description": "merge_intro_taiga_plus_openclaw_sections"
+  }
+}

@@ -1,0 +1,13 @@
+{
+  "enabled": true,
+  "mode": "dm",
+  "target": "6156503615",
+  "bot": {
+    "token_ref": "file:/root/.openclaw/secrets/matrixprojectsupdatebot.env#TELEGRAM_BOT_TOKEN",
+    "link": "https://t.me/matrixprojectsupdatebot"
+  },
+  "anti_spam": {
+    "dedupe_window_seconds": 600,
+    "max_messages_per_minute": 6
+  }
+}
