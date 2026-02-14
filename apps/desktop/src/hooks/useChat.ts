@@ -53,6 +53,8 @@ export const useChat = () => {
           setTypingIndicator(true)
           setTimeout(() => setTypingIndicator(false), 3000)
         } else if (message.type === "connected") {
+          // Clear any previous connection error once the socket is up
+          setError(null)
           setConnected(true)
           if (message.agentId) {
             console.log(`🤖 Connected to agent: ${message.agentId}`)
