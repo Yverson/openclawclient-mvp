@@ -88,6 +88,13 @@ class ApiClient {
     return response.data
   }
 
+  // Generic passthrough helper (used by chat history)
+  async get<T = any>(path: string) {
+    return this.withNetworkFallback(async () => {
+      return this.client.get<T>(path)
+    })
+  }
+
   async getStatus(): Promise<{
     servers: Server[]
     containers: Container[]

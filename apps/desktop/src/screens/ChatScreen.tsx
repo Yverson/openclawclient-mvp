@@ -6,6 +6,7 @@ import { Button } from "@/components/Button"
 import { Spinner } from "@/components/Spinner"
 import { useChat } from "@/hooks/useChat"
 import { formatTime } from "@/utils/formatting"
+import { MarkdownMessage } from "@/components/chat/MarkdownMessage"
 
 export const ChatScreen: React.FC = () => {
   const {
@@ -92,7 +93,9 @@ export const ChatScreen: React.FC = () => {
                         : "bg-slate-700 text-slate-100 rounded-bl-none"
                     }`}
                   >
-                    <p className="text-sm break-words">{message.content}</p>
+                    <div className="text-sm break-words">
+                      <MarkdownMessage content={message.content} />
+                    </div>
                     <p className="text-xs opacity-70 mt-1">
                       {formatTime(message.timestamp)}
                     </p>

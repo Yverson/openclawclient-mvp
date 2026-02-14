@@ -13,7 +13,7 @@ export const useDashboard = () => {
     stopAutoRefresh,
   } = useDashboardStore()
 
-  const intervalRef = useRef<NodeJS.Timeout | null>(null)
+  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
 
   useEffect(() => {
     fetchStatus()

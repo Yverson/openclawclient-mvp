@@ -1,8 +1,13 @@
 import type { ChatMessage } from "@/types/chat"
 
 export interface WebSocketMessage {
-  type: "message" | "typing" | "connected" | "disconnected" | "error"
+  type: "message" | "typing" | "connected" | "disconnected" | "error" | "history"
+
+  // Common payload shapes
   data?: ChatMessage | any
+  messages?: ChatMessage[]
+  agentId?: string
+
   error?: string
 }
 

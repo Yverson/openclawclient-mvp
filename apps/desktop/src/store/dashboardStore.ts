@@ -17,8 +17,8 @@ interface DashboardStore {
   setError: (error: string | null) => void
 
   fetchStatus: () => Promise<void>
-  startAutoRefresh: () => NodeJS.Timeout
-  stopAutoRefresh: (interval: NodeJS.Timeout) => void
+  startAutoRefresh: () => ReturnType<typeof setInterval>
+  stopAutoRefresh: (interval: ReturnType<typeof setInterval>) => void
 }
 
 export const useDashboardStore = create<DashboardStore>((set) => ({

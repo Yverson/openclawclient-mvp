@@ -49,8 +49,10 @@ export const useAuthStore = create<AuthStore>((set) => ({
         set({
           user: {
             id: response.user.id,
+            name: response.user.name ?? (response.user.email?.split("@")[0] ?? "User"),
             email: response.user.email,
-            role: "user"
+            role: "user",
+            createdAt: response.user.createdAt ?? new Date().toISOString(),
           },
           token: response.token,
           apiUrl,

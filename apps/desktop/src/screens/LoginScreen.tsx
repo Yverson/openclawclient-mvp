@@ -66,22 +66,19 @@ export const LoginScreen: React.FC = () => {
       localStorage.setItem("auth_token", data.token)
       localStorage.setItem("api_url", apiUrl)
       apiClient.setBaseUrl(apiUrl)
-      localStorage.setItem(
-        "auth_user",
-        JSON.stringify({
-          id: data.user.id,
-          email: data.user.email,
-          role: "user",
-        })
-      )
+      const user = {
+        id: data.user.id,
+        name: data.user.name ?? (data.user.email?.split("@")[0] ?? "User"),
+        email: data.user.email,
+        role: "user" as const,
+        createdAt: data.user.createdAt ?? new Date().toISOString(),
+      }
+
+      localStorage.setItem("auth_user", JSON.stringify(user))
 
       setToken(data.token)
       storeSetApiUrl(apiUrl)
-      setUser({
-        id: data.user.id,
-        email: data.user.email,
-        role: "user",
-      })
+      setUser(user)
 
       await new Promise((resolve) => setTimeout(resolve, 50))
 
