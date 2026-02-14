@@ -8,6 +8,7 @@
     "apps/*"
   ],
   "scripts": {
+    "build": "npm run build:web",
     "dev": "turbo run dev",
     "build:web": "cd apps/desktop && npm run build:web",
     "build:electron": "cd apps/desktop && npm run build:electron",
