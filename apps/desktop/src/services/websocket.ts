@@ -15,9 +15,11 @@ export class MatrixWebSocket {
   private ws: WebSocket | null = null
   private url: string = ""
   private token: string = ""
+  private onMessageCallback: ((message: WebSocketMessage) => void) | null = null
   private reconnectAttempts = 0
   private maxReconnectAttempts = 5
   private reconnectDelay = 3000
+  private intentionalDisconnect = false
   private callbacks: Map<string, (data: WebSocketMessage) => void> = new Map()
 
   constructor() {}
@@ -28,8 +30,10 @@ export class MatrixWebSocket {
     onMessage?: (message: WebSocketMessage) => void
   ): Promise<void> {
     return new Promise((resolve, reject) => {
+      this.intentionalDisconnect = false
       this.url = apiUrl.replace(/^http/, "ws")
       this.token = token
+      this.onMessageCallback = onMessage ?? null
 
       const wsUrl = `${this.url}/ws/matrix?token=${token}`
 
@@ -47,8 +51,8 @@ export class MatrixWebSocket {
           try {
             const message: WebSocketMessage = JSON.parse(event.data)
             this.emitCallback("message", message)
-            if (onMessage) {
-              onMessage(message)
+            if (this.onMessageCallback) {
+              this.onMessageCallback(message)
             }
           } catch (e) {
             console.error("Failed to parse WebSocket message:", e)
@@ -66,8 +70,11 @@ export class MatrixWebSocket {
 
         this.ws.onclose = () => {
           console.log("WebSocket disconnected")
+          this.ws = null
           this.emitCallback("disconnected", { type: "disconnected" })
-          this.attemptReconnect()
+          if (!this.intentionalDisconnect) {
+            this.attemptReconnect()
+          }
         }
       } catch (error) {
         console.error("Failed to create WebSocket:", error)
@@ -104,6 +111,7 @@ export class MatrixWebSocket {
   }
 
   disconnect(): void {
+    this.intentionalDisconnect = true
     if (this.ws) {
       this.ws.close()
       this.ws = null
@@ -126,13 +134,14 @@ export class MatrixWebSocket {
   }
 
   private attemptReconnect(): void {
-    if (this.reconnectAttempts < this.maxReconnectAttempts) {
+    if (this.reconnectAttempts < this.maxReconnectAttempts && this.url && this.token) {
       this.reconnectAttempts++
       console.log(
         `Attempting to reconnect... (${this.reconnectAttempts}/${this.maxReconnectAttempts})`
       )
+      const callback = this.onMessageCallback
       setTimeout(() => {
-        this.connect(this.url, this.token).catch((error) => {
+        this.connect(this.url, this.token, callback ?? undefined).catch((error) => {
           console.error("Reconnection failed:", error)
         })
       }, this.reconnectDelay)
