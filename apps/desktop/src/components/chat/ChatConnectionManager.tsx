@@ -12,7 +12,7 @@ import { apiClient } from "@/services/api"
 export const ChatConnectionManager: React.FC = () => {
   const { token, apiUrl } = useAuth()
   const {
-    addMessage,
+    upsertMessage,
     setMessages,
     setError,
     setConnected,
@@ -40,7 +40,7 @@ export const ChatConnectionManager: React.FC = () => {
     matrixWebSocket
       .connect(apiUrl, token, (message) => {
         if (message.type === "message" && message.data) {
-          addMessage(message.data)
+          upsertMessage(message.data)
         } else if (message.type === "history" && message.messages) {
           setMessages(message.messages)
         } else if (message.type === "typing") {
@@ -67,7 +67,7 @@ export const ChatConnectionManager: React.FC = () => {
       matrixWebSocket.disconnect()
       setConnected(false)
     }
-  }, [token, apiUrl, addMessage, setMessages, setError, setConnected, setTypingIndicator])
+  }, [token, apiUrl, upsertMessage, setMessages, setError, setConnected, setTypingIndicator])
 
   return null
 }

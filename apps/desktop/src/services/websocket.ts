@@ -15,19 +15,20 @@ export class MatrixWebSocket {
   private ws: WebSocket | null = null
   private url: string = ""
   private token: string = ""
-  private onMessageCallback: ((message: WebSocketMessage) => void) | null = null
+  private wsUrl: string = ""
+  private onMessageCallback: ((..._args: [WebSocketMessage]) => void) | null = null
   private reconnectAttempts = 0
   private maxReconnectAttempts = 5
   private reconnectDelay = 3000
   private intentionalDisconnect = false
-  private callbacks: Map<string, (data: WebSocketMessage) => void> = new Map()
+  private callbacks: Map<string, (..._args: [WebSocketMessage]) => void> = new Map()
 
   constructor() {}
 
   connect(
     apiUrl: string,
     token: string,
-    onMessage?: (message: WebSocketMessage) => void
+    onMessage?: (..._args: [WebSocketMessage]) => void
   ): Promise<void> {
     return new Promise((resolve, reject) => {
       this.intentionalDisconnect = false
@@ -36,6 +37,21 @@ export class MatrixWebSocket {
       this.onMessageCallback = onMessage ?? null
 
       const wsUrl = `${this.url}/ws/matrix?token=${token}`
+      const previousWsUrl = this.wsUrl
+
+      if (
+        this.ws &&
+        (this.ws.readyState === WebSocket.OPEN || this.ws.readyState === WebSocket.CONNECTING)
+      ) {
+        if (previousWsUrl === wsUrl) {
+          this.wsUrl = wsUrl
+          resolve()
+          return
+        }
+        this.disconnect()
+      }
+
+      this.wsUrl = wsUrl
 
       try {
         this.ws = new WebSocket(wsUrl)
@@ -122,7 +138,7 @@ export class MatrixWebSocket {
     return this.ws !== null && this.ws.readyState === WebSocket.OPEN
   }
 
-  on(event: string, callback: (data: WebSocketMessage) => void): void {
+  on(event: string, callback: (..._args: [WebSocketMessage]) => void): void {
     this.callbacks.set(event, callback)
   }
 
