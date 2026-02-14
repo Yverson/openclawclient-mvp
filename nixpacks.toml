@@ -1,0 +1,4 @@
+# Nixpacks config for Railway / Nixpacks builds
+# Force Node 20 (default is 18, required by jsdom, mermaid, marked, etc.)
+[variables]
+NIXPACKS_NODE_VERSION = "20"
