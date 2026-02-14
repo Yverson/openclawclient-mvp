@@ -2,26 +2,22 @@ FROM node:20-alpine
 
 WORKDIR /app
 
-# Install pnpm
-RUN npm install -g pnpm
+# Copy package files and install dependencies
+COPY package.json package-lock.json* ./
+RUN npm install --production
 
-# Copy package files
-COPY package.json pnpm-lock.yaml* ./
-
-# Install dependencies
-RUN pnpm install --frozen-lockfile
-
-# Copy source
+# Copy application code
 COPY . .
 
-# Build TypeScript
-RUN pnpm run build
+# Create data directory for persistent storage
+RUN mkdir -p /app/data
 
-# Create data directory
-RUN mkdir -p ./data
+# Expose backend port
+EXPOSE 18790
 
-# Expose port
-EXPOSE 18789
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+  CMD wget --quiet --tries=1 --spider http://localhost:18790/health || exit 1
 
-# Start server
-CMD ["pnpm", "start"]
+# Start the backend
+CMD ["node", "index.js"]

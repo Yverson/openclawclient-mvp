@@ -372,7 +372,34 @@ app.get('/api/dashboard', authMiddleware, (req, res) => {
 app.get('/api/chat/history', authMiddleware, (req, res) => {
   const conversations = loadConversations();
   const userHistory = conversations[req.user.userId] || [];
-  res.json({ messages: userHistory.map(msg => ({ id: msg.id, content: msg.content, sender: msg.role === 'user' ? 'user' : 'assistant', timestamp: msg.timestamp, read: true })) });
+
+  // Deduplicate streaming artifacts: when consecutive assistant messages are
+  // prefixes of each other (streaming chunks that were each saved), keep only
+  // the longest (final) version.
+  const cleaned = [];
+  for (let i = 0; i < userHistory.length; i++) {
+    const cur = userHistory[i];
+    const next = userHistory[i + 1];
+
+    // If current is assistant and next is also assistant, and the next message
+    // starts with the current text → skip current (it's a partial chunk).
+    if (
+      cur.role === 'assistant' &&
+      next?.role === 'assistant' &&
+      next.content?.startsWith(cur.content)
+    ) {
+      continue; // skip partial chunk, the longer version comes next
+    }
+    cleaned.push(cur);
+  }
+
+  // Persist the cleaned version if we removed duplicates
+  if (cleaned.length < userHistory.length) {
+    conversations[req.user.userId] = cleaned;
+    saveConversations(conversations);
+  }
+
+  res.json({ messages: cleaned.map(msg => ({ id: msg.id, content: msg.content, sender: msg.role === 'user' ? 'user' : 'assistant', timestamp: msg.timestamp, read: true })) });
 });
 
 const messageQueue = [];
@@ -384,6 +411,7 @@ let gatewayReqSeq = 0;
 const gatewayPending = new Map();
 const gatewaySessionUserMap = new Map(); // sessionKey -> userId
 const gatewayLastTextBySessionKey = new Map(); // sessionKey -> last assistant text sent to client
+const gatewayStreamBuffers = new Map(); // sessionKey -> { text, timer, messageId }
 
 function nextReqId() {
   gatewayReqSeq += 1;
@@ -476,6 +504,28 @@ async function sendGatewayConnect() {
   await gatewayRequest('connect', params, 8000);
 }
 
+// Streaming debounce delay (ms).  The gateway may send many incremental chunks
+// before the final one.  We buffer them and only forward to the client once the
+// stream has been idle for STREAM_DEBOUNCE_MS **or** we receive an explicit
+// "final" / "completed" / done flag.
+const STREAM_DEBOUNCE_MS = parseInt(process.env.STREAM_DEBOUNCE_MS, 10) || 800;
+
+function flushStreamBuffer(sessionKey) {
+  const buf = gatewayStreamBuffers.get(sessionKey);
+  if (!buf) return;
+  if (buf.timer) clearTimeout(buf.timer);
+  gatewayStreamBuffers.delete(sessionKey);
+
+  const userId = gatewaySessionUserMap.get(sessionKey);
+  if (!userId) return;
+
+  const last = gatewayLastTextBySessionKey.get(sessionKey);
+  if (last === buf.text) return;          // exact duplicate guard
+  gatewayLastTextBySessionKey.set(sessionKey, buf.text);
+
+  sendToUser(userId, buf.text, 'assistant');
+}
+
 function handleGatewayEvent(evt) {
   if (evt?.event !== 'chat') return;
   const payload = evt?.payload;
@@ -488,23 +538,49 @@ function handleGatewayEvent(evt) {
   const text = extractTextFromChatPayload(payload);
   if (!text) return;
 
-  // Gateways may emit different completion flags depending on protocol/version.
-  // Prefer final messages, but fall back to emitting when no state is provided.
-  const isFinal =
+  // Detect whether the gateway explicitly marks this chunk as final.
+  const isExplicitlyFinal =
     payload?.state === 'final' ||
     payload?.state === 'completed' ||
     payload?.final === true ||
     payload?.done === true ||
-    payload?.isFinal === true ||
-    payload?.state == null;
+    payload?.isFinal === true;
 
-  if (!isFinal) return;
+  // Detect intermediate / streaming chunks
+  const isStreaming =
+    payload?.state === 'streaming' ||
+    payload?.state === 'partial' ||
+    payload?.state === 'generating' ||
+    payload?.streaming === true ||
+    payload?.partial === true;
 
-  const last = gatewayLastTextBySessionKey.get(sessionKey);
-  if (last === text) return;
-  gatewayLastTextBySessionKey.set(sessionKey, text);
+  if (isExplicitlyFinal) {
+    // ── Explicit final → flush immediately with the final text ──
+    const buf = gatewayStreamBuffers.get(sessionKey);
+    if (buf?.timer) clearTimeout(buf.timer);
+    gatewayStreamBuffers.delete(sessionKey);
 
-  sendToUser(userId, text, 'assistant');
+    const last = gatewayLastTextBySessionKey.get(sessionKey);
+    if (last === text) return;
+    gatewayLastTextBySessionKey.set(sessionKey, text);
+
+    sendToUser(userId, text, 'assistant');
+    return;
+  }
+
+  // ── Streaming / unknown state → buffer + debounce ──
+  let buf = gatewayStreamBuffers.get(sessionKey);
+  if (buf) {
+    if (buf.timer) clearTimeout(buf.timer);
+    buf.text = text;   // always keep the latest (longest) chunk
+  } else {
+    buf = { text, timer: null };
+    gatewayStreamBuffers.set(sessionKey, buf);
+  }
+
+  // If the chunk is explicitly marked as streaming, we only debounce.
+  // If state is null/undefined (ambiguous), we still debounce to be safe.
+  buf.timer = setTimeout(() => flushStreamBuffer(sessionKey), STREAM_DEBOUNCE_MS);
 }
 
 function connectOpenClawBridge() {

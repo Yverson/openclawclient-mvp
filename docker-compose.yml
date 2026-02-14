@@ -1,26 +1,58 @@
 version: '3.9'
 
 services:
-  openclawclient:
+  # ── Frontend (React app served by "serve") ──
+  frontend:
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: openclawclient-app
+    container_name: openclawclient-frontend
     ports:
       - "3000:3000"
     environment:
       - NODE_ENV=production
-      - VITE_OPENCLAWS_URL=${VITE_OPENCLAWS_URL:-http://localhost:8000}
+      - VITE_OPENCLAWS_URL=${VITE_OPENCLAWS_URL:-http://backend:18790}
       - VITE_API_TIMEOUT=${VITE_API_TIMEOUT:-30000}
-      - LOG_LEVEL=${LOG_LEVEL:-info}
-    volumes:
-      - node_modules:/app/node_modules
-      - ./dist:/app/dist
+    depends_on:
+      backend:
+        condition: service_healthy
     networks:
       - openclaw-network
     restart: unless-stopped
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:3000/api/health"]
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:3000/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 5s
+
+  # ── Backend (Node.js Express + WebSocket) ──
+  backend:
+    build:
+      context: ./apps/backend
+      dockerfile: Dockerfile
+    container_name: openclawclient-backend
+    ports:
+      - "18790:18790"
+    environment:
+      - NODE_ENV=production
+      - PORT=18790
+      - JWT_SECRET=${JWT_SECRET:-change-me-in-production}
+      - CORS_ORIGINS=${CORS_ORIGINS:-http://localhost:3000,http://frontend:3000}
+      - ENABLE_CHAT_FALLBACK=${ENABLE_CHAT_FALLBACK:-1}
+      - OPENCLAW_WSS_URL=${OPENCLAW_WSS_URL:-}
+      - OPENCLAW_WSS_TOKEN=${OPENCLAW_WSS_TOKEN:-}
+      - OPENCLAW_WSS_ORIGIN=${OPENCLAW_WSS_ORIGIN:-}
+      - OPENCLAW_GATEWAY_PORT=${OPENCLAW_GATEWAY_PORT:-18789}
+      - STREAM_DEBOUNCE_MS=${STREAM_DEBOUNCE_MS:-800}
+      - LOG_LEVEL=${LOG_LEVEL:-info}
+    volumes:
+      - backend-data:/app/data
+    networks:
+      - openclaw-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:18790/health"]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -31,4 +63,4 @@ networks:
     driver: bridge
 
 volumes:
-  node_modules:
+  backend-data:

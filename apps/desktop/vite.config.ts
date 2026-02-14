@@ -23,6 +23,7 @@ export default defineConfig({
   server: {
     port: 5173,
     strictPort: false,
+    allowedHosts: ['localhost', '127.0.0.1', '0.0.0.0', 'glad-oriented-camel.ngrok-free.app'],
   },
   build: {
     target: 'ES2020',
