@@ -427,6 +427,7 @@ function extractTextFromChatPayload(payload) {
   const message = payload.message;
   if (typeof message === 'string') return message;
   if (typeof payload.content === 'string') return payload.content;
+  if (typeof payload.delta === 'string') return payload.delta;
 
   if (Array.isArray(message)) {
     return message.map(part => (typeof part?.text === 'string' ? part.text : '')).join(' ').trim();
@@ -551,36 +552,26 @@ function handleGatewayEvent(evt) {
     payload?.state === 'streaming' ||
     payload?.state === 'partial' ||
     payload?.state === 'generating' ||
+    payload?.state === 'delta' ||
     payload?.streaming === true ||
     payload?.partial === true;
 
-  if (isExplicitlyFinal) {
-    // ── Explicit final → flush immediately with the final text ──
-    const buf = gatewayStreamBuffers.get(sessionKey);
-    if (buf?.timer) clearTimeout(buf.timer);
-    gatewayStreamBuffers.delete(sessionKey);
-
-    const last = gatewayLastTextBySessionKey.get(sessionKey);
-    if (last === text) return;
-    gatewayLastTextBySessionKey.set(sessionKey, text);
-
-    sendToUser(userId, text, 'assistant');
-    return;
-  }
-
-  // ── Streaming / unknown state → buffer + debounce ──
+  // IMPORTANT: Always buffer + debounce. The gateway may send multiple chunks
+  // (including multiple "final" events with progressively longer text). Sending
+  // immediately on "final" caused duplicate messages in the chat UI.
+  const isDeltaChunk = typeof payload?.delta === 'string' && payload.delta.length > 0;
   let buf = gatewayStreamBuffers.get(sessionKey);
   if (buf) {
     if (buf.timer) clearTimeout(buf.timer);
-    buf.text = text;   // always keep the latest (longest) chunk
+    buf.text = isDeltaChunk ? (buf.text || '') + text : text;  // accumulate delta, replace full
   } else {
     buf = { text, timer: null };
     gatewayStreamBuffers.set(sessionKey, buf);
   }
 
-  // If the chunk is explicitly marked as streaming, we only debounce.
-  // If state is null/undefined (ambiguous), we still debounce to be safe.
-  buf.timer = setTimeout(() => flushStreamBuffer(sessionKey), STREAM_DEBOUNCE_MS);
+  // Use shorter debounce for explicit final (stream done) vs streaming chunks
+  const debounceMs = isExplicitlyFinal ? 150 : STREAM_DEBOUNCE_MS;
+  buf.timer = setTimeout(() => flushStreamBuffer(sessionKey), debounceMs);
 }
 
 function connectOpenClawBridge() {
