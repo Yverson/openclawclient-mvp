@@ -556,9 +556,8 @@ function handleGatewayEvent(evt) {
     payload?.streaming === true ||
     payload?.partial === true;
 
-  // IMPORTANT: Always buffer + debounce. The gateway may send multiple chunks
-  // (including multiple "final" events with progressively longer text). Sending
-  // immediately on "final" caused duplicate messages in the chat UI.
+  // IMPORTANT: Only flush on explicit final. Streaming chunks are buffered but
+  // never sent — otherwise we get 2+ messages (e.g. "Bien" then "Bien reçu...").
   const isDeltaChunk = typeof payload?.delta === 'string' && payload.delta.length > 0;
   let buf = gatewayStreamBuffers.get(sessionKey);
   if (buf) {
@@ -569,9 +568,11 @@ function handleGatewayEvent(evt) {
     gatewayStreamBuffers.set(sessionKey, buf);
   }
 
-  // Use shorter debounce for explicit final (stream done) vs streaming chunks
-  const debounceMs = isExplicitlyFinal ? 150 : STREAM_DEBOUNCE_MS;
-  buf.timer = setTimeout(() => flushStreamBuffer(sessionKey), debounceMs);
+  if (isExplicitlyFinal) {
+    // Final chunk: short debounce to catch any late "final" duplicates
+    buf.timer = setTimeout(() => flushStreamBuffer(sessionKey), 150);
+  }
+  // Streaming chunks: no timer — we never flush until we get a final
 }
 
 function connectOpenClawBridge() {
