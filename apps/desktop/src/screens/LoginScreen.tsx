@@ -16,10 +16,10 @@ const getDefaultApiUrl = () => {
   }
 
   if (typeof window !== "undefined") {
-    return "https://chatapi.gaddielcloud.online"
+    return "https://openclawsapi.dockploydatabase.gaddielcloud.online"
   }
 
-  return "https://chatapi.gaddielcloud.online"
+  return "https://openclawsapi.dockploydatabase.gaddielcloud.online"
 }
 
 export const LoginScreen: React.FC = () => {

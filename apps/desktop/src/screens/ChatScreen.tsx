@@ -1,12 +1,13 @@
 import React, { useState, useRef, useEffect } from "react"
-import { Send, AlertCircle, Wifi, WifiOff } from "lucide-react"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/Card"
+import { Send, AlertCircle, Wifi, WifiOff, Wrench } from "lucide-react"
+import { Card, CardContent } from "@/components/Card"
 import { Input } from "@/components/Input"
 import { Button } from "@/components/Button"
 import { Spinner } from "@/components/Spinner"
 import { useChat } from "@/hooks/useChat"
+import { useAuth } from "@/hooks/useAuth"
 import { formatTime } from "@/utils/formatting"
-import { MarkdownMessage } from "@/components/chat/MarkdownMessage"
+import { ChatMessageContent } from "@/components/chat/ChatMessageContent"
 
 export const ChatScreen: React.FC = () => {
   const {
@@ -17,8 +18,10 @@ export const ChatScreen: React.FC = () => {
     typingIndicator,
     sendMessage,
   } = useChat()
+  const { user } = useAuth()
 
   const [inputValue, setInputValue] = useState("")
+  const assistantLabel = user?.name ? `${user.name}'s Technical Assistant` : "Technical Assistant"
   const messagesEndRef = useRef<HTMLDivElement>(null)
 
   const scrollToBottom = () => {
@@ -82,34 +85,65 @@ export const ChatScreen: React.FC = () => {
               {messages.map((message) => (
                 <div
                   key={message.id}
-                  className={`flex ${
+                  className={`flex gap-3 ${
                     message.sender === "user" ? "justify-end" : "justify-start"
                   }`}
                 >
+                  {message.sender === "assistant" && (
+                    <div className="flex-shrink-0 w-8 h-8 rounded-lg bg-slate-600 flex items-center justify-center">
+                      <Wrench className="w-4 h-4 text-slate-300" />
+                    </div>
+                  )}
                   <div
-                    className={`max-w-xs lg:max-w-md px-4 py-2 rounded-lg ${
-                      message.sender === "user"
-                        ? "bg-primary-600 text-white rounded-br-none"
-                        : "bg-slate-700 text-slate-100 rounded-bl-none"
+                    className={`flex flex-col max-w-xs lg:max-w-md ${
+                      message.sender === "user" ? "items-end" : "items-start"
                     }`}
                   >
-                    <div className="text-sm break-words">
-                      <MarkdownMessage content={message.content} />
-                    </div>
-                    <p className="text-xs opacity-70 mt-1">
-                      {formatTime(message.timestamp)}
+                    <p className="text-xs font-medium text-slate-400 mb-1">
+                      {message.sender === "user" ? "You" : assistantLabel}
                     </p>
+                    <div
+                      className={`px-4 py-2 rounded-lg ${
+                        message.sender === "user"
+                          ? "bg-red-700/90 text-white rounded-br-none"
+                          : "bg-slate-700 text-slate-100 rounded-bl-none"
+                      }`}
+                    >
+                      <div className="text-sm break-words">
+                        <ChatMessageContent
+                          content={message.content}
+                          messages={messages}
+                          sender={message.sender}
+                        />
+                      </div>
+                      <p className="text-xs opacity-70 mt-1">
+                        {formatTime(message.timestamp)}
+                      </p>
+                    </div>
                   </div>
+                  {message.sender === "user" && (
+                    <div className="flex-shrink-0 w-10 h-10 rounded-full bg-red-600 flex items-center justify-center text-white font-semibold">
+                      {user?.name?.charAt(0) ?? "U"}
+                    </div>
+                  )}
                 </div>
               ))}
 
               {typingIndicator && (
-                <div className="flex justify-start">
-                  <div className="bg-slate-700 text-slate-100 px-4 py-2 rounded-lg rounded-bl-none">
-                    <div className="flex gap-1">
-                      <span className="w-2 h-2 bg-slate-400 rounded-full animate-bounce"></span>
-                      <span className="w-2 h-2 bg-slate-400 rounded-full animate-bounce" style={{ animationDelay: "0.2s" }}></span>
-                      <span className="w-2 h-2 bg-slate-400 rounded-full animate-bounce" style={{ animationDelay: "0.4s" }}></span>
+                <div className="flex gap-3 justify-start">
+                  <div className="flex-shrink-0 w-8 h-8 rounded-lg bg-slate-600 flex items-center justify-center">
+                    <Wrench className="w-4 h-4 text-slate-300" />
+                  </div>
+                  <div className="flex flex-col items-start">
+                    <p className="text-xs font-medium text-slate-400 mb-1">
+                      {assistantLabel}
+                    </p>
+                    <div className="bg-slate-700 text-slate-100 px-4 py-2 rounded-lg rounded-bl-none">
+                      <div className="flex gap-1">
+                        <span className="w-2 h-2 bg-slate-400 rounded-full animate-bounce"></span>
+                        <span className="w-2 h-2 bg-slate-400 rounded-full animate-bounce [animation-delay:0.2s]"></span>
+                        <span className="w-2 h-2 bg-slate-400 rounded-full animate-bounce [animation-delay:0.4s]"></span>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -135,6 +169,7 @@ export const ChatScreen: React.FC = () => {
           onChange={(e) => setInputValue(e.target.value)}
           disabled={!isConnected || isLoading}
           className="flex-1"
+          title="Saisir votre message"
         />
         <Button
           type="submit"

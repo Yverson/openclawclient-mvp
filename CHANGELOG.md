@@ -14,8 +14,8 @@ Format inspiré de Keep a Changelog.
 ### Changed
 - Archi déploiement: séparation domaines
   - Frontend: `https://chat.gaddielcloud.online`
-  - API: `https://chatapi.gaddielcloud.online`
-- Frontend: URL API par défaut → `https://chatapi.gaddielcloud.online`.
+  - API: `https://openclawsapi.dockploydatabase.gaddielcloud.online`
+- Frontend: URL API par défaut → `https://openclawsapi.dockploydatabase.gaddielcloud.online`.
 
 ### Fixed
 - Frontend: correction du flux login (state/hydrate) pour éviter “login OK mais pas de redirection”.
