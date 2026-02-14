@@ -2,6 +2,7 @@ import React, { useEffect } from "react"
 import { Outlet, Navigate } from "react-router-dom"
 import { useAuth } from "@/hooks/useAuth"
 import { Sidebar } from "@/components/Sidebar"
+import { ChatConnectionManager } from "@/components/chat/ChatConnectionManager"
 
 export const ProtectedLayout: React.FC = () => {
   const { isAuthenticated } = useAuth()
@@ -17,6 +18,7 @@ export const ProtectedLayout: React.FC = () => {
 
   return (
     <div className="flex h-screen bg-slate-900 text-slate-100">
+      <ChatConnectionManager />
       <Sidebar />
 
       {/* Main Content */}
