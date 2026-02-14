@@ -1,5 +1,6 @@
 import { app, BrowserWindow, Menu } from "electron"
 import path from "path"
+import fs from "fs"
 import { fileURLToPath } from "url"
 
 const __filename = fileURLToPath(import.meta.url)
@@ -8,7 +9,8 @@ const __dirname = path.dirname(__filename)
 let mainWindow
 
 function createWindow() {
-  mainWindow = new BrowserWindow({
+  const iconPath = path.join(__dirname, "public", "icon.png")
+  const opts = {
     width: 1400,
     height: 900,
     minWidth: 900,
@@ -18,8 +20,10 @@ function createWindow() {
       nodeIntegration: false,
       contextIsolation: true,
     },
-    icon: path.join(__dirname, "public", "icon.png"),
-  })
+  }
+  if (fs.existsSync(iconPath)) opts.icon = iconPath
+
+  mainWindow = new BrowserWindow(opts)
 
   const isDev = process.env.NODE_ENV === "development"
   const startUrl = isDev
