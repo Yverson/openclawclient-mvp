@@ -33,7 +33,39 @@ export const useChatStore = create<ChatStore>((set) => ({
       seen.add(m.id)
       return true
     })
-    set({ messages: unique })
+
+    const compacted = unique.reduce<ChatMessage[]>((acc, current) => {
+      const last = acc[acc.length - 1]
+      if (
+        last &&
+        last.sender === "assistant" &&
+        current.sender === "assistant" &&
+        typeof last.content === "string" &&
+        typeof current.content === "string"
+      ) {
+        const lastTrimmed = last.content.trim()
+        const currentTrimmed = current.content.trim()
+        const looksLikeContinuation =
+          (currentTrimmed.length >= lastTrimmed.length &&
+            currentTrimmed.startsWith(lastTrimmed)) ||
+          (lastTrimmed.length >= currentTrimmed.length &&
+            lastTrimmed.startsWith(currentTrimmed))
+
+        if (looksLikeContinuation) {
+          acc[acc.length - 1] = {
+            ...last,
+            ...current,
+            content: current.content,
+          }
+          return acc
+        }
+      }
+
+      acc.push(current)
+      return acc
+    }, [])
+
+    set({ messages: compacted })
   },
   addMessage: (message) =>
     set((state) => {

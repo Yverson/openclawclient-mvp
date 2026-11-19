@@ -42,7 +42,10 @@ export const ChatConnectionManager: React.FC = () => {
         if (message.type === "message" && message.data) {
           upsertMessage(message.data)
         } else if (message.type === "history" && message.messages) {
-          setMessages(message.messages)
+          const hasLocalMessages = useChatStore.getState().messages.length > 0
+          if (!hasLocalMessages) {
+            setMessages(message.messages)
+          }
         } else if (message.type === "typing") {
           setTypingIndicator(true)
           setTimeout(() => setTypingIndicator(false), 3000)
